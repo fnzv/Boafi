@@ -45,12 +45,20 @@ results = parser.parse_args()
 
 lan=results.lan
 
-
+lanip=""
 ip=results.ip
 
+
+
+### Check TOR service
+
+
+if(results.lan):
+        lanip="SocksPolicy accept 192.168.1.0/24"
+        
+
 torrc="""SocksPort 9050
-SocksPort """+ip+""":9100
-SocksPolicy accept 192.168.1.0/24
+SocksPort """+ip+""":9100"""+lanip+"""
 SocksPolicy accept 127.0.0.0/8
 SocksPolicy reject *
 ORPort 9001
@@ -63,13 +71,19 @@ DisableDebuggerAttachment 0
 """
 
 
-### Check TOR service
+        
+if(results.install):
+        print os.popen("sudo apt-get install tor").read()
+        print "Moving configuration to /etc/tor/torrc"
+        os.popen("echo '"+torrc+"' > /etc/tor/torcc")
 
 
 if(results.loadall):
 
         if("tor" in os.popen("ps -A | grep 'tor'").read()):
                 print "TOR is working"
+                ## Run iptables rules in ram and don't store them
+                # except traffic 22,53
         else:
                 print "Starting TOR service"
                 os.popen("service tor stop")## check
@@ -82,7 +96,6 @@ if(results.loadall):
                 print "TOR CONFIGURATION IS LOADED CORRECTLY"
         else:
                 print "IP address mismatch...Are you trying to run tor on a different ip?"
-                
                 
                 
                 
