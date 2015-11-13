@@ -4,6 +4,13 @@ import os,time,sys,subprocess
 import argparse
 
 
+def EnaMon():
+        #Refreshing interfaces
+        os.system("airmon-ng stop mon0")
+        #Starting Monitor mode mon0
+        os.system("airmon-ng start wlan0")
+
+
 #####  BoafiCap.py
 ###  - Capture all wireless networks and output them into csv\pcap files
 ##   - Dependencies : aircrack-ng
@@ -23,6 +30,9 @@ parser.add_argument('-o', action='store', dest='output',
                     help='Output file name without extension..if empty i will use ( dump.extension ) ')
 
 
+parser.add_argument('-t', action='store', dest='time',
+                    help='Write time interval')
+
 
 parser.add_argument('-csv', action='store_true', default=False,
                     dest='csvmode',
@@ -34,9 +44,8 @@ parser.add_argument('-pcap', action='store_true', default=False,
                     help='Set pcap mode')
 
 
-
-
-
+time=""
+time+=results.time
 results = parser.parse_args()
 
 csvmode=results.csvmode
@@ -48,13 +57,9 @@ else :
 
 pcapmode=results.pcapmode
 
-
-
-def EnaMon():
-        #Refreshing interfaces
-        os.system("airmon-ng stop mon0")
-        #Starting Monitor mode mon0
-        os.system("airmon-ng start wlan0")
+if results.time !="" :
+    time=int(results.time)
+    
 
 
 
@@ -66,11 +71,11 @@ time.sleep(2)
 print "Starting capturing wifi networks  nearby\n\n"
 
 if pcapmode and csvmode :
-        cmd="nohup airodump-ng mon0 -w "+output_file+" --output-format csv,cap >/dev/null 2>&1 &"
+        cmd="nohup airodump-ng mon0 -w "+output_file+" --output-format csv,cap -t "+time+" >/dev/null 2>&1 &"
 elif pcapmode :
-        cmd="nohup airodump-ng mon0 -w "+output_file+" --output-format cap >/dev/null 2>&1 &"
+        cmd="nohup airodump-ng mon0 -w "+output_file+" --output-format cap -t "+time+" >/dev/null 2>&1 &"
 elif csvmode :
-        cmd="nohup airodump-ng mon0 -w "+output_file+" --output-format csv  >/dev/null 2>&1 &"
+        cmd="nohup airodump-ng mon0 -w "+output_file+" --output-format csv  -t "+time+"  >/dev/null 2>&1 &"
 
 
 os.system(cmd)
