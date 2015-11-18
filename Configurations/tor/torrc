@@ -1,0 +1,18 @@
+###########
+########### Working tor configuration tested with Raspberry pi 2 B
+########### Tor working as a Transparent Proxy with iptables so all traffic of our box is redirected to tor network to anonymize the user
+
+
+
+
+Log notice file /var/log/tor/notices.log
+VirtualAddrNetwork 10.192.0.0/10
+AutomapHostsSuffixes .onion,.exit
+AutomapHostsOnResolve 1
+TransPort 9040
+TransListenAddress 192.168.42.1 #Our hostapd and isc-dhcp-server ip address
+DNSPort 53
+DNSListenAddress 192.168.42.1 # Same
+
+
+
