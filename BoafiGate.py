@@ -5,37 +5,34 @@
 ##   - Dependencies : tor,iptables
 #    - Transparent tunnel via iptables to force all traffic go on TOR network 
 #    - Every user connected via wifi or ethernet to boafi can access internet only via TOR if enabled
+#
 
 
 ###  Author: Yessou Sami 
 ###  Project Boafi
-###  (Under development no test yet)
+###  Working with /Configurations/tor/torrc and iptables rules
 
 
 import os,time,argparse
-##ARGS when executed choose for ip addresss
+##Be Sure to use the right configuration for Transparent Proxy(port 9040)
 
 parser = argparse.ArgumentParser()
 
 
+parser.add_argument('-loadcfg', action='store_true', dest='loadcfg',
+                    help='Load the default torrc settings of the system and start the tor service')
+                    
+parser.add_argument('-loadrules', action='store_true', dest='loadrules',
+                    help='Load iptables rules')
+                    
+parser.add_argument('-run', action='store_true', dest='run',
+                    help='Run\Restart Tor service')
 
 parser.add_argument('-ip', action='store', dest='ip',
                     help='Specify the ip address of the Boafi interface that will serve as Tor Gateway ')
 
 
 
-parser.add_argument('-lan', action='store_true', default=False,
-                    dest='lan',
-                    help='Allow only LAN ip addresses to connect to this Tor Gateway ')
-
-parser.add_argument('-install', action='store_true', default=False,
-                    dest='setup',
-                    help='Install tor ')
-
-
-parser.add_argument('-loadall', action='store_true', default=False,
-                    dest='loadall',
-                    help='Start All the services and uses the ip address as Tor Gateway')
 
 
 
@@ -43,59 +40,64 @@ parser.add_argument('-loadall', action='store_true', default=False,
 
 results = parser.parse_args()
 
-lan=results.lan
+loadcfg=results.loadcfg
 
-lanip=""
 ip=results.ip
 
 
 
-### Check TOR service
 
 
-if(results.lan):
-        lanip="SocksPolicy accept 192.168.1.0/24"
-        
-
-torrc="""SocksPort 9050
-SocksPort """+ip+""":9100"""+lanip+"""
-SocksPolicy accept 127.0.0.0/8
-SocksPolicy reject *
-ORPort 9001
-Nickname BoafiTor
-RelayBandwidthRate 200 KB
-RelayBandwidthBurst 400 KB
-DirPort 9030
-ExitPolicy reject *:*
-DisableDebuggerAttachment 0
-"""
+## Use this configuration when the raspberry is the default gateway ---> (Wlan Hostpod)       
+torrc="""
+Log notice file /var/log/tor/notices.log
+VirtualAddrNetwork 10.192.0.0/10
+AutomapHostsSuffixes .onion,.exit
+AutomapHostsOnResolve 1
+TransPort 9040
+TransListenAddress """+ip+""" 
+DNSPort 53
+DNSListenAddress """+ip
 
 
-        
-if(results.install):
-        print os.popen("sudo apt-get install tor").read()
-        print "Moving configuration to /etc/tor/torrc"
-        os.popen("echo '"+torrc+"' > /etc/tor/torcc")
 
 
-if(results.loadall):
+
+
+if(results.loadcfg):
 
         if("tor" in os.popen("ps -A | grep 'tor'").read()):
                 print "TOR is working"
+               
+                if not (os.popen("cat /etc/tor/torrc").read() in torrc):
+                  os.popen("echo '"+torrc+"' > /etc/tor/torcc")
+                  print "Moving configuration to /etc/tor/torrc"
                 ## Run iptables rules in ram and don't store them
                 # except traffic 22,53
+                os.popen("sudo iptables -t nat -A PREROUTING -i wlan0 -p tcp --dport 22 -j REDIRECT --to-ports 22") 
+                #Rule to allow us to ssh in rpi 
+                os.popen("sudo iptables -t nat -A PREROUTING -i wlan0 -p udp --dport 53 -j REDIRECT --to-ports 53") 
+                #Rule to allow dns requests
+                os.popen("sudo iptables -t nat -A PREROUTING -i wlan0 -p tcp --syn -j REDIRECT --to-ports 9040") 
         else:
                 print "Starting TOR service"
                 os.popen("service tor stop")## check
                 os.popen("service tor start")
                 #check configuration
 
+if(results.loadrules):
+         ## Run iptables rules in ram and don't store them
+                # except traffic 22,53
+                os.popen("sudo iptables -t nat -A PREROUTING -i wlan0 -p tcp --dport 22 -j REDIRECT --to-ports 22") 
+                #Rule to allow us to ssh in rpi 
+                os.popen("sudo iptables -t nat -A PREROUTING -i wlan0 -p udp --dport 53 -j REDIRECT --to-ports 53") 
+                #Rule to allow dns requests
+                os.popen("sudo iptables -t nat -A PREROUTING -i wlan0 -p tcp --syn -j REDIRECT --to-ports 9040") 
 
-
-        if(torrc in  os.popen("cat /etc/tor/torrc").read()):
-                print "TOR CONFIGURATION IS LOADED CORRECTLY"
-        else:
-                print "IP address mismatch...Are you trying to run tor on a different ip?"
+if(results.run):
+                print "Starting TOR service"
+                os.popen("service tor stop")
+                os.popen("service tor start")
                 
                 
                 
