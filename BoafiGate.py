@@ -5,7 +5,9 @@
 ##   - Dependencies : tor,iptables
 #    - Transparent tunnel via iptables to force all traffic go on TOR network 
 #    - Every user connected via wifi or ethernet to boafi can access internet only via TOR if enabled
-#
+####
+## EXAMPLE:  ./boafiGate.py -loadcfg -ip 192.168.42.1 -run
+## runs Tor on 192.168.42.1:9040 as a transparent proxy and loads iptables rules to redirect all traffic on the proxy
 
 
 ###  Author: Yessou Sami 
