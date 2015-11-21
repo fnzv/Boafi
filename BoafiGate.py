@@ -26,7 +26,12 @@ parser.add_argument('-loadcfg', action='store_true', dest='loadcfg',
                     
 parser.add_argument('-loadrules', action='store_true', dest='loadrules',
                     help='Load iptables rules')
-                    
+    
+
+parser.add_argument('-stop', action='store_true', dest='stop',
+                    help='Stop TOR and restore Iptables')
+
+
 parser.add_argument('-run', action='store_true', dest='run',
                     help='Run\Restart Tor service')
 
