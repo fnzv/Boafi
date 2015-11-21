@@ -105,7 +105,16 @@ if(results.run):
                 print "Starting TOR service"
                 os.popen("service tor stop")
                 os.popen("service tor start")
-                
+
+if(results.stop):
+                os.popen("sudo service tor stop")
+                print "Stoppend TOR service"
+                os.popen("sudo iptables -F")
+                os.popen("sudo iptables -X")
+                os.popen("sudo iptables-restore < /etc/iptables.ipv4.nat")
+                print "Restored Default iptables rules from /etc/iptables.ipv4.nat"
+
+ 
                 
                 
                 
