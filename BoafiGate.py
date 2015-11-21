@@ -49,7 +49,13 @@ results = parser.parse_args()
 
 loadcfg=results.loadcfg
 
-ip=results.ip
+if (results.ip):
+        ip=str(results.ip)
+else:
+        ip="192.168.42.1"
+
+
+
 
 
 
