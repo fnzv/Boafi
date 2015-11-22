@@ -9,7 +9,6 @@
 
 ###  Author: Yessou Sami 
 ###  Project Boafi
-
 import os,time,argparse
 
 parser = argparse.ArgumentParser()
@@ -33,23 +32,35 @@ parser.add_argument('-t', action='store_true', default=False,
                     help='Insert timestamp in file name?')
 
 
-parser.add_argument('-mitm', action='store_true', default=False,
-                    dest='mitm',
-                    help='Enable Man in the Middle module(ARPSPOOF)')
+parser.add_argument('-log', action='store_true', default=False,
+                    dest='log',
+                    help='Enable logging on interface -i')
 
 
 
-parser.add_argument('-block', action='store_true', default=False,
-                    dest='block',
-                    help='Enable firewall rules to block traffic') #load rules from external file or via other args
-                    
+parser.add_argument('-sds', action='store_true', default=False,
+                    dest='sds',
+                    help='Enable Smart Detection System')
+
+
+parser.add_argument('-sds--auto', action='store_true', default=False,
+                    dest='sdsAuto',
+                    help='Auto-SDS')
+
+
+
+parser.add_argument('-sds--admin', action='store', dest='adminIP',
+                    help='Specify only ip allowed or subnet network')
 
 
 
 results = parser.parse_args()
 
-mitm=results.mitm
-block=results.block
+
+adminIP=results.adminIP
+log=results.log
+sds=results.sds
+sdsAuto=results.sdsAuto
 packets=str(results.packets)
 int=str(results.int)
 
@@ -59,21 +70,25 @@ else :
         output_file="DUMP_"+int
 
 
-ts=output_file+str(time.time()) # timestamp in UTC
-os.popen("nohup tcpdump -i "+int+" -c "+packets+" -C 1 -w "+ts+".cap >/dev/null 2>&1 &") ## Log all packets running on eth0 when plugged in
+
+if(log):
+        ##Every 500k packets a new file is wrote
+        ts=output_file+str(time.time()) # timestamp in UTC
+        os.popen("nohup tcpdump -i "+int+" -c "+packets+" -C 1 -w "+ts+".cap >/dev/null 2>&1 &") ## Log all packets running on eth0 when plugged in
 
 
 
-## TODO
-##Start firewall 
+
+##Start firewall if args are true
 ###Do filtering
 ###Do redirect
-#notify Suspicious traffic passes
-#smart detect traffic decide firewall rules (bad dns server queries,bad ip addreses,ban C&C botnet ip addresses..)
+if(sds): #start SDS
+        if(sdsAuto):
+        #Allow SSH Remote connection only to admin device IP
+                os.popen("iptables -I INPUT -s "+adminIP+" -p tcp --dport 22 -j ACCEPT")
+                os.popen("iptables -I INPUT -s 0.0.0.0/0 -p tcp --dport 22 -j DROP")
+        ##ADD other rules 
 
-##Start mitm 
-##dns poison
-##arp spoof
 
 
 
