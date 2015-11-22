@@ -50,14 +50,17 @@ parser.add_argument('-sds--auto', action='store_true', default=False,
 
 
 parser.add_argument('-sds--admin', action='store', dest='adminIP',
-                    help='Specify only ip allowed or subnet network')
+                    help='Specify only ip allowed or subnet network for the admin')
+
+parser.add_argument('-sds--net', action='store', dest='allowedNet',
+                    help='Specify the allowed network for guests or users')
 
 
 
 results = parser.parse_args()
 
-
-adminIP=results.adminIP
+allowedNet=str(results.allowedNet)
+adminIP=str(results.adminIP)
 log=results.log
 sds=results.sds
 sdsAuto=results.sdsAuto
@@ -87,11 +90,26 @@ if(sds): #start SDS
         #Allow SSH Remote connection only to admin device IP
                 os.popen("iptables -I INPUT -s "+adminIP+" -p tcp --dport 22 -j ACCEPT")
                 os.popen("iptables -I INPUT -s 0.0.0.0/0 -p tcp --dport 22 -j DROP")
+                os.popen("iptables -A FORWARD -s "+allowedNet+" -p tcp:udp --dport 80:443 -J ACCEPT")
+                os.popen("iptables -A FORWARD -s "+allowedNet+" -p udp --dport 53 -j ACCEPT")
+                os.popen("iptables -P FORWARD DROP")
+
+                
         ##ADD other rules 
 
 
 
 
+######TODO
+#### sds--auto 
+## Add Sticky MAC Filtering?
+## Add Basic url filtering 
+## Add Logging feature for traffic on dns,http
+## Add Learning feature to block new suspicious traffic.. (EXAMPLE : if network requests are the same during a long periond learn
+#                                                            and adapt the network to these... elif other new requests are denied..)
+## Saving firewall config via iptables-save and -sds--load to load a new configuration
+## Add Banned ip list | banned url list | banned mac list | 
+## Add function to allow network access only to Registered users on Captive Portal
 
 
 
