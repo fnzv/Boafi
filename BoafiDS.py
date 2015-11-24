@@ -9,14 +9,14 @@
 
 ###  Author: Yessou Sami 
 ###  Project Boafi
-
+#!/usr/bin/python
 
 import os,time,argparse
 
 parser = argparse.ArgumentParser()
 
 
-parser.add_argument('-i', action='store', dest='int',
+parser.add_argument('-i', action='store', dest='int', default="wlan0",
                     help='Interface to log packets')
 
 
@@ -58,13 +58,19 @@ parser.add_argument('--allowNet', action='store', dest='allowedNet', default="no
 
 
 
-parser.add_argument('--ena', action='store', dest='ena',
-                    help='Enable active  SDS activity..  packet flow monitoring')
+parser.add_argument('--ena', action='store_true', dest='ena',
+                    help='Scan Packet Capture log and automatically create rules')
+
+
+parser.add_argument('--spoof', action='store_true', dest='arpspoof',
+                    help='Enable arp spoofing to apply firewall rules on eth0')
+
+
+parser.add_argument('--dg', action='store', dest='dgIP', default="192.168.1.1", help='Specify the ip address of the default gateway to spoof ')
 
 
 
 
-results = parser.parse_args()
 
 
 allowedNet=results.allowedNet
@@ -82,10 +88,9 @@ else :
 
 print "pre log"
 if(results.log):
-        ##Every 500k packets a new file is wrote
         ts=output_file+str(time.time()) # timestamp in UTC
         os.popen("nohup tcpdump -i "+int+" -c "+packets+" -C 1 -w "+ts+".cap >/dev/null 2>&1 &") ## Log all packets running on eth0 when plugged in
-
+        # FORCE GATEWAY? arpspoof -i eth0  -t iptarget ipgateway
 
 
 print "postlog"
@@ -117,21 +122,22 @@ if(sds): #start SDS
                 os.system('echo "1" > /proc/sys/net/ipv4/tcp_syncookies') #SYN Flood Protection
                 os.system('echo "123" > /proc/sys/net/ipv4/ip_default_ttl') #Hide TTL Value
                 print "Secured SYN Flood and Ping attacks"
-                #Start an activity logger and every minute updates and checks\learn new rules
+                #Start an activity logger and create new rules
                 if(results.ena):
-                        print "Start active sds"
-                        ##Every 100 packets a new file is wrote and
-                        ts=output_file+str(time.time()) # timestamp in UTC
-                        os.popen("nohup tcpdump -i "+int+" -c 100 -C 1 -w "+ts+".cap >/dev/null 2>&1 &") ## Log all packet$
+                        #use pcap and block
+                        print "ena"
+
+                else: #Doesn't start activity logger but uses a static iptables firewall loaded from local or (download from net?) Blocked url list
+                        f=open("SDSlist","r") #Open external file to see what sites can pass our gateway
+                        filterlist=f.read()  # list based on keywords
+                        for word in filterlist: #Apply URL Filterbased firewall
+                                os.popen("iptables -I FORWARD -p tcp --match multiport --dports 80,443 -m string --string "+word+" --algo kmp -j DROP")
+                                print "added: ",word
 
 
-                else: #Doesn't start activity logger
-                        print "passive sds"
-                        #URLSNARF check sites and block strange activity
-                        # OR TCPDUMP and then DPKT to parse packets
-                        #https://github.com/ameygat/pyscripts/blob/master/pcap_public.py
-                        #https://jon.oberheide.org/blog/2008/10/15/dpkt-tutorial-2-parsing-a-pcap-file/
-                        #Dynamic iptable rules
+
+                # Run tcpdump get some packets and decide from these what are bad packets.. D(inamic)IPtables
+
         #If not auto Start Manual SDS with single rules activation
         else:
                 print "Start Manual sds"
