@@ -70,6 +70,8 @@ parser.add_argument('--dg', action='store', dest='dgIP', default="192.168.1.1", 
 
 
 
+results = parser.parse_args()
+
 
 
 
