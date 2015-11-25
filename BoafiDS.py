@@ -99,22 +99,21 @@ adminIP=results.adminIP
 sdsAuto=results.sdsAuto
 sds=results.sds
 packets=str(results.packets)
-int=str(results.int)
-print "RUNNING"
+
 if results.output !=" " :
         output_file=str(results.output)+"_"+int
 else :
         output_file="DUMP_"+int
 
 
-print "pre log"
+
 if(results.log):
         ts=output_file+str(time.time()) # timestamp in UTC
         os.popen("nohup tcpdump -i "+int+" -c "+packets+" -C 1 -w "+ts+".cap >/dev/null 2>&1 &") ## Log all packets running on eth0 when plugged in
         # FORCE GATEWAY? arpspoof -i eth0  -t iptarget ipgateway
 
 
-print "postlog"
+
 ##Start firewall if args are true
 ###Do filtering
 ###Do redirect
