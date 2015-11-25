@@ -2,7 +2,8 @@
 ;Project Boafi
 ;
 ;
-;Example firewall list that will block some services
+;Example firewall list that will block some services and ip addresses
+;Tested on Raspberry pi and Arpspoof on eth0... devices could reach those services
 ;line starting with ";" are ignored and used as comments
 ;
 facebook
