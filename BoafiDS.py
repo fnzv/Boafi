@@ -54,6 +54,10 @@ parser.add_argument('--auto', action='store_true', default=False,
 parser.add_argument('--admin', action='store', dest='adminIP', default="none", help='Specify only ip allowed or subnet network for Admin rights')
 
 
+parser.add_argument('--deny', action='store', dest='denyrules', default="none", help='Add your own rules for manual sds firewall')
+# example: --deny "tcp https http icmp"
+
+
 parser.add_argument('--allowNet', action='store', dest='allowedNet', default="none", help='Specify only ip allowed or subnet network for allowed network')
 
 
@@ -129,13 +133,19 @@ if(sds): #start SDS
                         #use pcap and block
                         print "ena"
 
-                else: #Doesn't start activity logger but uses a static iptables firewall loaded from local or (download from net?) Blocked url list
-                        f=open("SDSlist","r") #Open external file to see what sites can pass our gateway
-                        filterlist=f.read()  # list based on keywords
-                        for line in filterlist.split(): #Apply URL Filterbased firewall
-                                os.popen("iptables -I FORWARD -p tcp --match multiport --dports 80,443 -m string "+line)
-                                print "added: ",line
-
+                else:  #Doesn't start activity logger but uses a static iptables firewall loaded from local or (download from net?) Blocked url list
+                        try: #If file list doesn't exist don't load list ..print error
+                                f=open("list","r") #Open external file to see what sites can pass our gateway
+                                filterlist=f.read()  # list based on keywords
+                                for line in filterlist.split(): #Apply URL Filterbased firewall
+                                        if(";" in line): # ignore line cuz its a comment
+                                                print "comment"
+                                        else:   # Execute filtering
+                                                os.popen("iptables -I FORWARD -p tcp --match multiport --dports 80,443 -m string --string "+line+" --algo kmp -j DROP")
+                                                print "added rule: ",line
+                                                os.popen("iptables -I FORWARD -p udp --dport 53 -m string --string "+line+" --algo kmp -j DROP")
+                        except:
+                                print "Can't load filter list"
 
 
 
@@ -175,7 +185,7 @@ if(sds): #start SDS
 # Add Learning feature to block new suspicious traffic.. (EXAMPLE : if network requests are the same during a long periond learn
 #                                                            and adapt the network to these... elif other new requests are denied..)
 ## Saving firewall config via iptables-save and -sds--load to load a new configuration
-## Add Banned ip list | banned url list | banned mac list | 
+## Add Banned ip list | banned url list | banned mac list |
 ## Add function to allow network access only to Registered users on Captive Portal
 
 
