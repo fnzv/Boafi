@@ -143,21 +143,36 @@ if(sds): #start SDS
 
         #If not auto Start Manual SDS with single rules activation
         else:
-                print "Start Manual sds"
-                        #Read values from ARGS and send them directly to iptables
-                        #Static IP tables rules...
+                print "Starting Manual sds"  # Grap rules from --deny args and create iptables rules
+                deny=str(results.denyrules)
+                print "using rules ",deny
+                if("tcp" in deny):
+                        if("http" in deny):
+                                os.popen("iptables -I FORWARD -p tcp --dport 80 -j DROP")
+                        if("https" in deny):
+                                os.popen("iptables -I FORWARD -p tcp --dport 443 -j DROP")
+                        if("ftp" in deny):
+                                os.popen("iptables -I FORWARD -p tcp --dport 21 -j DROP")
+                        if("icmp" in deny):
+                                 os.popen("iptables -I FORWARD -p icmp --icmp-type 8 -j DROP")
+
+
+                elif("udp" in deny):
+                        if("http" in deny):
+                                os.popen("iptables -I FORWARD -p udp --dport 80 -j DROP")
+                        if("https" in deny):
+                                os.popen("iptables -I FORWARD -p udp --dport 443 -j DROP")
+                        if("dns" in deny):
+                                 os.popen("iptables -I FORWARD -p udp --dport 53 -j DROP")
 
 
 
 
 
 
-######TODO
-#### sds--auto 
-## Add Sticky MAC Filtering?
-## Add Basic url filtering 
-## Add Logging feature for traffic on dns,http
-## Add Learning feature to block new suspicious traffic.. (EXAMPLE : if network requests are the same during a long periond learn
+
+
+# Add Learning feature to block new suspicious traffic.. (EXAMPLE : if network requests are the same during a long periond learn
 #                                                            and adapt the network to these... elif other new requests are denied..)
 ## Saving firewall config via iptables-save and -sds--load to load a new configuration
 ## Add Banned ip list | banned url list | banned mac list | 
