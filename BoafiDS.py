@@ -11,7 +11,9 @@
 ###  Project Boafi
 #!/usr/bin/python
 
-import os,time,argparse
+#!/usr/bin/python
+
+import os,time,argparse,socket
 
 parser = argparse.ArgumentParser()
 
@@ -54,18 +56,24 @@ parser.add_argument('--auto', action='store_true', default=False,
 parser.add_argument('--admin', action='store', dest='adminIP', default="none", help='Specify only ip allowed or subnet network for Admin rights')
 
 
-parser.add_argument('--deny', action='store', dest='denyrules', default="none", help='Add your own rules for manual sds firewall')
-# example: --deny "tcp https http icmp"
-
-
 parser.add_argument('--allowNet', action='store', dest='allowedNet', default="none", help='Specify only ip allowed or subnet network for allowed network')
 
 
 
-parser.add_argument('--ena', action='store_true', dest='ena',
-                    help='Scan Packet Capture log and automatically create rules')
+parser.add_argument('--use', action='store', dest='ena', default="none", help='Scan Packet Capture log and automatically create rules..example --use capture.cap')
 
 
+
+
+parser.add_argument('--deny', action='store', dest='denyrules', default="none", help='Write deny rules for manual sds .. these will not affect auto mode')
+
+
+
+parser.add_argument('--permit', action='store', dest='permitrules', default="none", help='Write permit rules for manual sds .. these will not affect auto mode')
+
+
+
+##Still alpha.. not implemented mitm firewall yet
 parser.add_argument('--spoof', action='store_true', dest='arpspoof',
                     help='Enable arp spoofing to apply firewall rules on eth0')
 
@@ -74,8 +82,9 @@ parser.add_argument('--dg', action='store', dest='dgIP', default="192.168.1.1", 
 
 
 
-results = parser.parse_args()
 
+
+results = parser.parse_args()
 
 
 
@@ -128,13 +137,27 @@ if(sds): #start SDS
                 os.system('echo "1" > /proc/sys/net/ipv4/tcp_syncookies') #SYN Flood Protection
                 os.system('echo "123" > /proc/sys/net/ipv4/ip_default_ttl') #Hide TTL Value
                 print "Secured SYN Flood and Ping attacks"
-                #Start an activity logger and create new rules
-                if(results.ena):
-                        #use pcap and block
+                #Load rules from capture
+                # SPERIMENTAL ..Don't use if u don't know what are you doing..(se no ti tagli fuori)
+                if not(results.ena == "none"):
                         print "ena"
-
-                else:  #Doesn't start activity logger but uses a static iptables firewall loaded from local or (download from net?) Blocked url list
-                        try: #If file list doesn't exist don't load list ..print error
+                        print "Reading capture file and parsing ip addresses"
+                        print "Only ip addresses found on .pcap will be allowed to pass on this firewall"
+                        try:
+                                allowedIP=os.popen("""tshark  -o column.format:'"Source", "%s"' -r """+results.ena+".cap |sort|uniq").read()
+                                print allowedIP
+                                for line in allowedIP.split():
+                                        try:
+                                                 socket.inet_aton(line)
+                                                 print "Loaded from pcap  ",line
+                                                 os.popen("iptables -I FORWARD -p ALL -m string --string  "+line+" --algo kmp -j ACCEPT")
+                                        except:
+                                                print "not loaded ip"
+                                os.popen("iptables -P FORWARD DROP")
+                        except:
+                                print "error reading pcap "
+                else: #Doesn't start activity logger but uses a static iptables firewall loaded from local or (download from net?) Blocked url list
+                        try:
                                 f=open("list","r") #Open external file to see what sites can pass our gateway
                                 filterlist=f.read()  # list based on keywords
                                 for line in filterlist.split(): #Apply URL Filterbased firewall
@@ -151,10 +174,8 @@ if(sds): #start SDS
                                                         os.popen("iptables -I FORWARD -p tcp --match multiport --dports 80,443 -m string --string "+line+" --algo kmp -j DROP")
                                                         print "added rule: ",line
                                                         os.popen("iptables -I FORWARD -p udp --dport 53 -m string --string "+line+" --algo kmp -j DROP")
-                          except:
+                        except:
                                 print "Can't load filter list"
-
-
 
                 # Run tcpdump get some packets and decide from these what are bad packets.. D(inamic)IPtables
 
@@ -163,7 +184,6 @@ if(sds): #start SDS
                 print "Start Manual sds"
                         #Read values from ARGS and send them directly to iptables
                         #Static IP tables rules...
-                        #DENY RULES
                 deny=str(results.denyrules)
                 print "using rules ",deny
                 if("tcp" in deny):
@@ -205,7 +225,6 @@ if(sds): #start SDS
                                 os.popen("iptables -I FORWARD -p udp --dport 443 -j ACCEPT")
                         if("dns" in permit):
                                  os.popen("iptables -I FORWARD -p udp --dport 53 -j ACCEPT")
-
 
 
 
