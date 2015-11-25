@@ -3,7 +3,7 @@ import os,time,argparse
 
 #####  BoafiHoney.py
 ###  - Creates a dns black hole and starts apache server (to run a Captive Portal or any web site)
-##   - Dependencies : bind9,apache
+##   - Dependencies : bind9,apache, (working hostspot.. dhcp & hostapd)
 #    - Forces every client to connect to our websites (for every http requests redirect to --> localhost)
 #    - HTTPs requests are blocked
 
