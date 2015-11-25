@@ -130,9 +130,10 @@ if(sds): #start SDS
                 else: #Doesn't start activity logger but uses a static iptables firewall loaded from local or (download from net?) Blocked url list
                         f=open("SDSlist","r") #Open external file to see what sites can pass our gateway
                         filterlist=f.read()  # list based on keywords
-                        for word in filterlist: #Apply URL Filterbased firewall
-                                os.popen("iptables -I FORWARD -p tcp --match multiport --dports 80,443 -m string --string "+word+" --algo kmp -j DROP")
-                                print "added: ",word
+                        for line in filterlist.split(): #Apply URL Filterbased firewall
+                                os.popen("iptables -I FORWARD -p tcp --match multiport --dports 80,443 -m string -$
+                                print "added: ",line
+
 
 
 
