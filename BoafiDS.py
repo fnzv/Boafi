@@ -50,6 +50,12 @@ parser.add_argument('-sds', action='store_true', default=False,
 parser.add_argument('--auto', action='store_true', default=False,
                     dest='sdsAuto',
                     help='Auto-SDS')
+                    
+
+parser.add_argument('-flush', action='store_true', default=False,
+                    dest='flush',
+                    help='Restore default iptables rules')
+
 
 
 
@@ -227,7 +233,9 @@ if(sds): #start SDS
                                  os.popen("iptables -I FORWARD -p udp --dport 53 -j ACCEPT")
 
 
-
+if(results.flush): #Restore iptables
+        os.popen("iptables-restore < /etc/iptables/rules.v4")
+   
 
 
 
