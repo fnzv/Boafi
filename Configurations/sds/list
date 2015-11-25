@@ -1,0 +1,16 @@
+;Smart detection system - Author: Yessou Sami
+;Project Boafi
+;
+;
+;Example firewall list that will block some services
+;line starting with ";" are ignored and used as comments
+;
+facebook
+google
+youtube
+whatsapp
+; ip addresses can be inserted into this list too 
+192.168.1.1
+192.168.1.254
+8.8.8.8
+8.8.8.8
