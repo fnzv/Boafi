@@ -141,10 +141,17 @@ if(sds): #start SDS
                                         if(";" in line): # ignore line cuz its a comment
                                                 print "comment"
                                         else:   # Execute filtering
-                                                os.popen("iptables -I FORWARD -p tcp --match multiport --dports 80,443 -m string --string "+line+" --algo kmp -j DROP")
-                                                print "added rule: ",line
-                                                os.popen("iptables -I FORWARD -p udp --dport 53 -m string --string "+line+" --algo kmp -j DROP")
-                        except:
+                                                try:
+                                                        socket.inet_aton(line)
+                                                        print "i'm an ipv4! ",line
+                                                        #if i'm here cuz line is an ipv4 address
+                                                        os.popen("iptables -I FORWARD -p ALL -m string --string  "+line+" --algo kmp -j DROP")
+                                                except: # if i'm there cuz its not an ipv4 so a normal string
+
+                                                        os.popen("iptables -I FORWARD -p tcp --match multiport --dports 80,443 -m string --string "+line+" --algo kmp -j DROP")
+                                                        print "added rule: ",line
+                                                        os.popen("iptables -I FORWARD -p udp --dport 53 -m string --string "+line+" --algo kmp -j DROP")
+                          except:
                                 print "Can't load filter list"
 
 
