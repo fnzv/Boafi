@@ -160,7 +160,10 @@ if(sds): #start SDS
 
         #If not auto Start Manual SDS with single rules activation
         else:
-                print "Starting Manual sds"  # Grap rules from --deny args and create iptables rules
+                print "Start Manual sds"
+                        #Read values from ARGS and send them directly to iptables
+                        #Static IP tables rules...
+                        #DENY RULES
                 deny=str(results.denyrules)
                 print "using rules ",deny
                 if("tcp" in deny):
@@ -181,6 +184,27 @@ if(sds): #start SDS
                                 os.popen("iptables -I FORWARD -p udp --dport 443 -j DROP")
                         if("dns" in deny):
                                  os.popen("iptables -I FORWARD -p udp --dport 53 -j DROP")
+                ### PERMIT RULES
+                permit=str(results.permitrules)
+                print "using rules ",permit
+                if("tcp" in permit):
+                        if("http" in permit):
+                                os.popen("iptables -I FORWARD -p tcp --dport 80 -j ACCEPT")
+                        if("https" in permit):
+                                os.popen("iptables -I FORWARD -p tcp --dport 443 -j ACCEPT")
+                        if("ftp" in permit):
+                                os.popen("iptables -I FORWARD -p tcp --dport 21 -j ACCEPT")
+                        if("icmp" in permit):
+                                 os.popen("iptables -I FORWARD -p icmp --icmp-type 8 -j ACCEPT")
+
+
+                elif("udp" in deny):
+                        if("http" in permit):
+                                os.popen("iptables -I FORWARD -p udp --dport 80 -j ACCEPT")
+                        if("https" in permit):
+                                os.popen("iptables -I FORWARD -p udp --dport 443 -j ACCEPT")
+                        if("dns" in permit):
+                                 os.popen("iptables -I FORWARD -p udp --dport 53 -j ACCEPT")
 
 
 
