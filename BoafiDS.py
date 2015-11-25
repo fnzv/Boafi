@@ -131,7 +131,7 @@ if(sds): #start SDS
                         f=open("SDSlist","r") #Open external file to see what sites can pass our gateway
                         filterlist=f.read()  # list based on keywords
                         for line in filterlist.split(): #Apply URL Filterbased firewall
-                                os.popen("iptables -I FORWARD -p tcp --match multiport --dports 80,443 -m string -$
+                                os.popen("iptables -I FORWARD -p tcp --match multiport --dports 80,443 -m string "+line)
                                 print "added: ",line
 
 
