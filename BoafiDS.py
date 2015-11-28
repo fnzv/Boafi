@@ -9,7 +9,6 @@
 
 ###  Author: Yessou Sami 
 ###  Project Boafi
-#!/usr/bin/python
 
 #!/usr/bin/python
 
