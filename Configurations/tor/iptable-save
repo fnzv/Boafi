@@ -6,7 +6,7 @@
 :POSTROUTING ACCEPT [1:48]
 -A PREROUTING -i wlan0 -p tcp -m tcp --dport 22 -j REDIRECT --to-ports 22
 -A PREROUTING -i wlan0 -p udp -m udp --dport 53 -j REDIRECT --to-ports 53
--A PREROUTING -i wlan0 -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIREC$
+-A PREROUTING -i wlan0 -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT
 -A POSTROUTING -o eth0 -j MASQUERADE
 COMMIT
 # Completed on Wed Nov 18 21:02:06 2015
