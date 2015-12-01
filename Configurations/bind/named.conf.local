@@ -14,7 +14,7 @@ zone "example.com" {
     file "/etc/bind/zones/db.example.com";
 };
 
-//zone "." {
-//      type master;
-//      file "/etc/bind/db.catchall";
+//zone "." {     //uncomment this zone to enable dns blackhole
+//      type master;   //use rdnc querylog to enable dns query logging
+//      file "/etc/bind/db.catchall";  // tail -f /var/log/syslog to show dns queries log 
 //};
