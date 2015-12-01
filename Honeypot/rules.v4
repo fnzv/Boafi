@@ -1,3 +1,3 @@
 #iptables-save rules to redirect traffic to our honey pot even if hosts specify an alternative dns to our assigned via dhcp
--A PREROUTING -p tcp -m tcp --dport 443 -j DNAT --to-destination 192.168.42.1
--A PREROUTING -p tcp -m tcp --dport 80 -j DNAT --to-destination 192.168.42.1
+-A PREROUTING -p tcp --dport 443 -j DNAT --to-destination 192.168.42.1:80
+-A PREROUTING -p tcp --dport 80 -j DNAT --to-destination 192.168.42.1:80
