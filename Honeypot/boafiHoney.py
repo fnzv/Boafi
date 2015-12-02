@@ -8,7 +8,6 @@
 ###  Author: Yessou Sami 
 ###  Project Boafi
 ###  Tested on Raspberry pi 2(Raspian) with ALFA AWUS052NH
-
 #!/usr/bin/python
 
 import os,time,argparse
@@ -16,6 +15,9 @@ import os,time,argparse
 parser = argparse.ArgumentParser()
 
 
+parser.add_argument('-SSID', action='store', default="Free WIFI",
+                    dest='ssid',
+                    help='Set this SSID name for the hostapd configuration ')
 
 
 parser.add_argument('-blackhole', action='store_true', default=False,
@@ -36,12 +38,11 @@ results = parser.parse_args()
 
 
 
-
 ipaddr=str(os.popen("ifconfig wlan0 | grep 'inet addr' | awk -F: '{print $2}' | awk '{print $1}'").read())
 #Get ip address of wlan0 interface with linux bash
 ## Another way to get all ip addresses of boafi --> hostname --all-ip-addresses
 ## OR hostname -I
-
+ipaddr=ipaddr.strip()
 
 ###
 ###
@@ -70,28 +71,30 @@ bind_cfg="""$TTL    604800
 
 print bind_cfg
 
-#this minimal hostapd conf will be used if none is found
-hostapd_cfg="""ddns-update-style none;
-default-lease-time 600;
-max-lease-time 7200;
-subnet 192.168.42.0 netmask 255.255.255.0{
- range 192.168.42.10 192.168.42.255;
- option broadcast-address 192.168.42.255;
- option routers 192.168.42.1;
- default-lease-time 7000;
- max-lease-time 9000;
- option domain-name-servers 192.168.42.1,192.168.42.1;
-}
+
+
+APname=results.ssid
+
+hostapd_cfg="""
+interface=wlan0
+driver=nl80211
+ssid="""+APname+"""
+channel=6
+macaddr_acl=0
+auth_algs=1
+ignore_broadcast_ssid=0
 """
 
 
+print hostapd_cfg
+os.popen("sudo cp /etc/hostapd/hostapd.conf /etc/hostapd/cfg.backup") #Backup original config
 cfg_check=os.path.exists("/etc/bind/db.catchall")
-cfg2_check=os.path.exists("/etc/hostapd/hostapdhole.conf")
-if not(cfg2_check):
-  file= open("/etc/hostapd/hostapdhole.conf")
-  file.write(hostapd_cfg)
-  file.close()
 
+os.popen("service hostapd stop")
+file= open("/etc/hostapd/hostapd.conf","w")
+file.write(hostapd_cfg)
+file.close()
+os.popen("service hostapd start")
 
 
 file=open("/etc/bind/named.conf.local","r")
@@ -117,14 +120,19 @@ if(results.blackhole):
                 file = open("/etc/bind/db.catchall", "wb")
                 file.write(bind_cfg)
                 file.close()
-        os.popen("service apache2 start")
-        os.popen("service bind9 start")
-        os.popen("service hostapd stop")
-        os.popen("nohup hostapd /etc/hostapd/hostapdhole.conf >/dev/null 2>&1 &")
+        os.popen("sudo service apache2 start")
+        os.popen("sudo service bind9 start")
         #Started hostapd with the dnsblack hole configuration
+        print "iptables -t nat -I PREROUTING -p tcp --dport 80 -j DNAT --to-destination "+ipaddr+":80"
 
+        os.popen("iptables -t nat -I PREROUTING -p tcp --dport 80 -j DNAT --to-destination "+ipaddr+":80")
+        os.popen("iptables -t nat -I PREROUTING -p tcp --dport 443 -j DNAT --to-destination "+ipaddr+":80")
 
         print "started hostapd"
+
+
+
+
 
 ##TODO
 ## Stealth captive portal
