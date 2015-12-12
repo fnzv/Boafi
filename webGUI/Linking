@@ -1,0 +1,23 @@
+#Links between webgui & python scripts
+
+
+
+
+1 Home:                             boafiHome.py
+2 Aircrack:                         Aircrack.py(or just Aircrack php scripts)
+3 SDS:                              boafiDS.py
+4 Pentesting:                       boafiPentest.py
+5 Honeypot:                         boafiHoney.py
+6 Networking\Wireless Settings:     boafiSettings.py
+7 Anonimity:                        boafiGate.py
+
+
+
+
+#More details will be released on the completion of webGUI & scripts sync
+
+
+
+
+
+
