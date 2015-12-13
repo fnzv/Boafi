@@ -57,6 +57,14 @@ wifi=results.wifi
 killme=results.killme
 autocap=results.autocap
 noautocap=results.noautocap
+honey=results.honey
+nohoney=results.nohoney
+autohoney=results.autohoney
+noautohoney=results.noautohoney
+nopentest=results.nopentest
+fmonitor=results.fmonitor
+sysinfo=results.sysinfo
+
 
 
 if(wifi):
@@ -91,3 +99,4 @@ if(noautocap):
         crontab="/var/spool/cron/crontabs/root"
         filecron=open(crontab).read()
         open(crontab,"w").write(filecron.replace(boafiCap,""))
+
