@@ -17,7 +17,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-wifi', action='store_true', dest='wifi', default=False,
                     help='Get near-by wifi list')
 
-
 parser.add_argument('-killCap', action='store_true', dest='killme', default=False,
                     help='Kill mac address gathering and shuts monitor interface')
 
@@ -26,6 +25,29 @@ parser.add_argument('-AutoCap', action='store_true', dest='autocap', default=Fal
 
 parser.add_argument('-NoAutoCap', action='store_true', dest='noautocap', default=False,
                     help='Removes BoafiCap from start up')
+
+parser.add_argument('-Honey', action='store_true', dest='honey', default=False,
+                    help='Turn on honeypot')
+
+parser.add_argument('-NoHoney', action='store_true', dest='nohoney', default=False,
+                    help='Turn off honeypot')
+
+parser.add_argument('-AutoHoney', action='store_true', dest='autohoney', default=False,
+                    help='Adds to startup the honeypot')
+
+parser.add_argument('-NoAutoHoney', action='store_true', dest='noautohoney', default=False,
+                    help='Removes to startup the honeypot')
+
+parser.add_argument('-NoPentest', action='store_true', dest='nopentest', default=False,
+                    help='Turns Off any Pentesting attack currently running')
+
+parser.add_argument('-FastMonitoring', action='store_true', dest='fmonitor', default=False,
+                    help='Perform a quick scan on the network and shows online hosts,current connections,dns queri$
+
+parser.add_argument('-SysInfo', action='store_true', dest='sysinfo', default=False,
+                    help='Show Boafi Status (process,system data..)')
+
+
 
 
 results = parser.parse_args()
