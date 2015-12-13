@@ -23,6 +23,13 @@ parser.add_argument('-SSID', action='store', default="Free WIFI",
 parser.add_argument('-blackhole', action='store_true', default=False,
                     dest='blackhole',
                     help='Run the honeypot with a dns blackhole that points to local captive portal ')
+                    
+
+parser.add_argument('-off', action='store_true', default=False,
+                    dest='off',
+                    help='Turn off the honeypot ')
+  
+
 
 # Stealth honeypot  ---> Captive portal ----> Internet
 #parser.add_argument('-stealth', action='store_true', default=False,
@@ -129,6 +136,17 @@ if(results.blackhole):
         os.popen("iptables -t nat -I PREROUTING -p tcp --dport 443 -j DNAT --to-destination "+ipaddr+":80")
 
         print "started hostapd"
+
+
+if(results.off):
+        #removes iptables redirection
+        # Need to optimize the rule removal
+        os.popen("iptables -t nat -D  PREROUTING 1") # Removes first 2 rules inserted with -I on PREROUTING
+        os.popen("iptables -t nat -D  PREROUTING 2")
+        file=open("/etc/bind/named.conf.local","r").read()
+        open("/etc/bind/named.conf.local","w").write(file.replace(named," "))
+        #replaces the dns black hole
+
 
 
 
