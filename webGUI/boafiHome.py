@@ -100,3 +100,31 @@ if(noautocap):
         filecron=open(crontab).read()
         open(crontab,"w").write(filecron.replace(boafiCap,""))
 
+if(honey):
+        #turn on honeypot
+        os.popen("sudo python BoafiHoney.py -blackhole")
+
+if(nohoney):
+        #turn off honeypot
+        os.popen("sudo python BoafiHoney.py -off")
+
+
+if(autohoney):
+        #adds to crontab the script
+        boafiHoney="@reboot sudo python "+(os.popen('pwd').read()).strip()+'/BoafiHoney.py -blackhole'
+        os.popen("sudo echo '"+boafiHoney+"' >> /var/spool/cron/crontabs/root")
+
+if(noautohoney):
+        #removes from startup
+        boafiHoney="@reboot sudo python "+(os.popen('pwd').read()).strip()+'/BoafiHoney.py -blackhole'
+        crontab="/var/spool/cron/crontabs/root"
+        filecron=open(crontab).read()
+        open(crontab,"w").write(filecron.replace(boafiHoney,""))
+
+if(nopentest):
+        os.popen("boafiPentest.py -shut")
+
+
+
+
+
