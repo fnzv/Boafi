@@ -5,6 +5,7 @@
 ###  Author: Yessou Sami 
 ###  Project Boafi
 
+
 import os,time,argparse,socket
 
 parser = argparse.ArgumentParser()
@@ -33,7 +34,11 @@ parser.add_argument('--loadpcap', action='store', default="none",
 parser.add_argument('--loadweb', action='store', default="none",
                     dest='loadweb',
                     help='Load a list with banned keywords\IP\Domains from the web')
-
+                    
+parser.add_argument('--GUI', action='store_true', default=False,
+                    dest='gui',
+                    help='Load the webGUI and start browser to check stats\traffic analysis')  
+                    
 parser.add_argument('--nopolicy', action='store', default="none",
                     dest='nopolicy',
                     help='Set "DENY" default policy on given CHAIN.. example: FORWARD,INPUT,OUTPUT')    
@@ -46,6 +51,14 @@ parser.add_argument('--captiveportal', action='store', default="none",
                     dest='captive',
                     help='Enable the captive portal and any address is being redirected to the given address')    
 
+parser.add_argument('--dns-redirect', action='store', default="none",
+                    dest='dnsre',
+                    help='Redirect all DNS queries to given dns sever address')   
+
+parser.add_argument('--no-dns', action='store_true', default=False,
+                    dest='nodns',
+                    help='Removes DNS redirect')
+                    
 
 parser.add_argument('-R', action='store_true', default=False,
                     dest='flush',
@@ -192,6 +205,17 @@ if not(results.captive== "none"):
         ###
         #### Do Captive portal.. when registered allow user to browse internet or make policies to allow certain sites etc..
         
+if not(results.dnsre =="none"):
+       dnsServer=results.dnsre
+       os.popen("iptables -t nat -I PREROUTING -p udp --dport 53 -j DNAT --to-destination "+dnsServer+":53")
+       
+
+if(results.nodns):
+        ip=os.popen("""iptables -t nat -L PREROUTING  | grep "domain to:" | awk '{ print $8; exit }'""").read().replace("to:","")
+        cleanip=ip.strip()
+        os.popen("iptables -t nat -D PREROUTING -p udp --dport 53 -j DNAT --to-destination "+cleanip)
+
+
 
 if(results.killmitm):
     os.popen("killall arpspoof")
