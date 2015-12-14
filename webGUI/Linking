@@ -4,8 +4,20 @@
 
 
 1 Home:                             boafiHome.py
+          -wifi : Gets near-by wifi list and saves it into a file (wifi+timestamp)
+          -killCap : Kills capturing pcap and/or csv data
+          -AutoCap : Adds data gathering to start up
+          -NoAutoCap : Removes auto cap from start up
+          -Honey : Starts honeypot 
+          -NoHoney : Stop honeypot
+          -AutoHoney: Adds to startup honeypot
+          -NoPentest: Stop any pentest
+          -FastMonitoring: Perform quick pentest and gives an output 
+          -SysInfo : Shows boafi status and print it on a file
+            
 2 Aircrack:                         Aircrack.py(or just Aircrack php scripts)
 3 SDS:                              boafiDS.py
+          
 4 Pentesting:                       boafiPentest.py
 5 Honeypot:                         boafiHoney.py
 6 Networking\Wireless Settings:     boafiSettings.py
