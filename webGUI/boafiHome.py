@@ -125,6 +125,11 @@ if(nopentest):
         os.popen("boafiPentest.py -shut")
 
 
+if(sysinfo):
+        info=os.popen("ifconfig").read()+"\n---------\n"+os.popen("ps -A").read()+"\n---------\nHW:\n"+os.popen("lscpu && lsusb && df -H && free -m").read()
+        open("data"+time.time(),"w").write(info)
+
+
 
 
 
