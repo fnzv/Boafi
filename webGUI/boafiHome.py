@@ -19,6 +19,9 @@ parser.add_argument('-wifi', action='store_true', dest='wifi', default=False,
 
 parser.add_argument('-killCap', action='store_true', dest='killme', default=False,
                     help='Kill mac address gathering and shuts monitor interface')
+            
+parser.add_argument('-cap', action='store_true', dest='cap', default=False,
+                    help='Start csv\pcap gathering')
 
 parser.add_argument('-AutoCap', action='store_true', dest='autocap', default=False,
                     help='Adds to startup the AutoCapture function of BoafiCap')
@@ -54,6 +57,7 @@ results = parser.parse_args()
 
 
 wifi=results.wifi
+cap=results.cap
 killme=results.killme
 autocap=results.autocap
 noautocap=results.noautocap
@@ -80,6 +84,8 @@ if(wifi):
                  file.write(wifinets)
         file.close()
 
+if(cap):
+        os.popen("sudo python "+(os.popen('pwd').read()).strip()+'/BoafiCap.py -csv -pcap -o AutoCapture')
 
 if (killme):
         os.popen("killall airodump-ng")
