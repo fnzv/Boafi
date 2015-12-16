@@ -11,13 +11,10 @@ import os,time,argparse,socket
 parser = argparse.ArgumentParser()
 
 
-parser.add_argument('-i', action='store', dest='int', default="wlan0",
-                    help='Interface to log packets')
-
 
 parser.add_argument('-log', action='store_true', default=False,
                     dest='log',
-                    help='Enable logging everypacke packets on /var/log')
+                    help='Enable logging packets ..saving on /var/log')
 
 parser.add_argument('--blacklist', action='store', default="none",
                     dest='blacklist',
@@ -58,7 +55,18 @@ parser.add_argument('--dns-redirect', action='store', default="none",
 parser.add_argument('--no-dns', action='store_true', default=False,
                     dest='nodns',
                     help='Removes DNS redirect')
-                    
+                  
+parser.add_argument('--icmp-redirect', action='store', default="none",
+                    dest='icmpre',
+                    help='Redirect all ICMP Requests to given address')   
+
+parser.add_argument('--no-icmp', action='store_true', default=False,
+                    dest='noicmp',
+                    help='Removes ICMP redirect')
+
+parser.add_argument('-S', action='store_true', default=False,
+                    dest='save',
+                    help='Save iptables rules')
 
 parser.add_argument('-R', action='store_true', default=False,
                     dest='flush',
@@ -215,7 +223,19 @@ if(results.nodns):
         cleanip=ip.strip()
         os.popen("iptables -t nat -D PREROUTING -p udp --dport 53 -j DNAT --to-destination "+cleanip)
 
+if(results.icmpre == "none"):
+      fakedest=results.icmpre
+      os.popen("iptables -t nat -I PREROUTING -p icmp --icmp-type echo-request -j DNAT --to-destination "+fakedest+"")
+      os.popen("iptables -t nat -I PREROUTING -p icmp --icmp-type echo-request -j DNAT --to-destination "+fakedest+"")
 
+if(results.noicmp):
+        ip=os.popen("""iptables -t nat -L PREROUTING  | grep "icmp echo-request to:" | awk '{ print $8; exit }'""").read().replace("to:","")
+        cleanip=ip.strip()
+        os.popen("iptables -t nat -D PREROUTING -p icmp --icmp-type echo-request -j DNAT --to-destination "+cleanip+"")
+
+if(results.save):
+        os.popen("iptables-save >> /etc/iptables/rules.v4")
+        print "Saved rules!"
 
 if(results.killmitm):
     os.popen("killall arpspoof")
