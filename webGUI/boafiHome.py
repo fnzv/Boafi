@@ -1,11 +1,3 @@
-####
-#### Script for Home\Index page 
-#### 
-#### -Get wifi AP list
-#### -Turn off toggles for some boafi functions 
-#### -..
-
-##
 #!/usr/bin/python
 
 import os,time,argparse
