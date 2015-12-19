@@ -4,6 +4,7 @@
 
 
 1 Home:                             boafiHome.py
+
           -wifi : Gets near-by wifi list and saves it into a file (wifi+timestamp)
           -killCap : Kills capturing pcap and/or csv data
           -AutoCap : Adds data gathering to start up
@@ -16,13 +17,49 @@
           -SysInfo : Shows boafi status and print it on a file
             
 2 Aircrack:                         Aircrack.py(or just Aircrack php scripts)
+
 3 SDS:                              boafiDS.py
+
+          -loadpcap [filename] : Create rules based on ip addresses found on .pcap file
+          -blacklist [filename] : Create blacklist from given list
+          -whitelist [filename] : Create whitelist from given list
+          -nopolicy : Sets deny default policy
+          -yespolicy: Sets permit default policy
+          --captive : redirect traffic to our HTTP Captive portal
+          --dns-redirect [IP address]: Redirect DNS Queries to given DNS Server
+          -log : Starts Logging packets and saves then into /var/log/syslog
+          -S : Makes rules persistent
+          -R : Restore last saved rules
+          -rule [--deny |& --permit] protocol-protocol-...  : Create manual rules into the system
           
 4 Pentesting:                       boafiPentest.py
-5 Honeypot:                         boafiHoney.py
-6 Networking\Wireless Settings:     boafiSettings.py
-7 Anonimity:                        boafiGate.py
 
+          -mitm IP-ADDR [--dg IP-ADDR] [--denyTcp IP address] : Create a MITM attack 
+          -stress [MODE] : Stress test the network 
+          -RA [minutes] : Router Advertisements flood
+          -scan [IP address or subnet] [--syn] [--service] [--arpScan] -file [filename] : Scan given ip or subnet
+          -craft [TCP | UDP | PROTO]-DST[ip  or subnet]-SRC[ip  or subnet]-DPORT[port] : Craft manually packets  (requires Scapy)
+          -timeout [seconds]: Timeout in seconds before the attack timeouts (mitm,scan,stress)
+          
+5 Honeypot:                         boafiHoney.py
+
+          -blackhole --SSID [string] : Creates\Starts the blackhole dns and redirect all traffic to given site\ip
+          -off: Turns off honeypot
+
+6 Networking\Wireless Settings:     boafiSettings.py
+
+          -if [interface] -ip [IP address] -mask [mask address] : Configure give interface with values
+          -reboot : Reboots the system
+          -restart [service]: Restart given service
+          -down [interface]: Shuts down interface
+          -up [interface]: Turn on interface
+          -ifstat [seconds]: Make network stats on usage (requires ifstat)
+          
+7 Anonimity:                        boafiGate.py
+          
+          -loadrules : Load only firewall rules to redirect traffic on TOR Transparent Proxy
+          -loadcfg -ip [IP address] -run : Starts TOR and loadrules for Transparent Proxy
+          -stop: Stops TOR and restores iptables rules
 
 
 
