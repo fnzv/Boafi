@@ -25,6 +25,9 @@ def EnaMon():
 parser = argparse.ArgumentParser()
 
 
+parser.add_argument('-timeout', action='store', dest='timeout', default="none",
+                    help='Define given seconds before the capture timeouts if not specified will run until its killed')
+
 
 parser.add_argument('-o', action='store', dest='output',
                     help='Output file name without extension..if empty i will use ( dump.extension ) ')
@@ -49,6 +52,12 @@ time+=results.time
 results = parser.parse_args()
 
 csvmode=results.csvmode
+if not(results.timeout=="none"):
+        timeout="timeout "+results.timeout+"s "
+        print "\n\nTimeout set for seconds:"+results.timeout
+else:
+        timeout=""
+
 
 if results.output !=" " :
         output_file=results.output
@@ -61,21 +70,17 @@ if results.time !="" :
     time=int(results.time)
     
 
-
-
-
-
 EnaMon()
 print "mon0 Enabled \n\n"
 time.sleep(2)
 print "Starting capturing wifi networks  nearby\n\n"
 
 if pcapmode and csvmode :
-        cmd="nohup airodump-ng mon0 -w "+output_file+" --output-format csv,cap -t "+time+" >/dev/null 2>&1 &"
+        cmd="nohup "+timeout+"airodump-ng mon0 -w "+output_file+" --output-format csv,cap -t "+time+" >/dev/null 2>&1 &"
 elif pcapmode :
-        cmd="nohup airodump-ng mon0 -w "+output_file+" --output-format cap -t "+time+" >/dev/null 2>&1 &"
+        cmd="nohup "+timeout+"airodump-ng mon0 -w "+output_file+" --output-format cap -t "+time+" >/dev/null 2>&1 &"
 elif csvmode :
-        cmd="nohup airodump-ng mon0 -w "+output_file+" --output-format csv  -t "+time+"  >/dev/null 2>&1 &"
+        cmd="nohup "+timeout+"airodump-ng mon0 -w "+output_file+" --output-format csv  -t "+time+"  >/dev/null 2>&1 &"
 
 
 os.system(cmd)
