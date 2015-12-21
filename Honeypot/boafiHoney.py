@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #####  BoafiHoney.py
 ###  - Creates a dns black hole and starts apache server (to run a Captive Portal or any web site)
 ##   - Dependencies : bind9,apache, (working hostspot.. dhcp & hostapd)
@@ -8,7 +9,7 @@
 ###  Author: Yessou Sami 
 ###  Project Boafi
 ###  Tested on Raspberry pi 2(Raspian) with ALFA AWUS052NH
-#!/usr/bin/python
+
 
 import os,time,argparse
 
