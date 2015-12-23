@@ -1,6 +1,9 @@
 #!/usr/bin/python
 ### Boafi uses Smart Detecton System as local firewall\monitoring system 
-
+###
+### Dependencies: arpspoof,nmap (for mitm)
+###               iptables
+###               bootstrap (future GUI)
 ###  Author: Yessou Sami 
 ###  Project Boafi
 
