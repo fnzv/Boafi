@@ -27,6 +27,8 @@ parser.add_argument('-loadcfg', action='store_true', dest='loadcfg',
 parser.add_argument('-loadrules', action='store_true', dest='loadrules',
                     help='Load iptables rules')
     
+parser.add_argument('-proxy', action='store', dest='proxy',default="none",
+                    help='Load transparent proxy rules to given address')
 
 parser.add_argument('-stop', action='store_true', dest='stop',
                     help='Stop TOR and restore Iptables')
@@ -119,6 +121,10 @@ if(results.stop):
                 os.popen("sudo iptables -X")
                 os.popen("sudo iptables-restore < /etc/iptables.ipv4.nat")
                 print "Restored Default iptables rules from /etc/iptables.ipv4.nat"
+                
+if not(results.loadproxy=="none"): ## ONLY HTTP & HTTPS
+                proxy=results.loadproxy
+                os.popen("iptables -t nat -A PREROUTING -m multiport -p tcp --dports 80,443 -j DNAT --to "+proxy)
 
  
                 
