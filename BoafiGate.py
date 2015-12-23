@@ -125,7 +125,7 @@ if(results.stop):
 if not(results.loadproxy=="none"): ## ONLY HTTP & HTTPS
                 proxy=results.loadproxy
                 os.popen("iptables -t nat -A PREROUTING -m multiport -p tcp --dports 80,443 -j DNAT --to "+proxy)
-
+## Traffic generated from the machine its self won't be run on the proxy
  
                 
                 
