@@ -123,8 +123,11 @@ if(results.stop):
                 print "Restored Default iptables rules from /etc/iptables.ipv4.nat"
                 
 if not(results.loadproxy=="none"): ## ONLY HTTP & HTTPS
+                # Proxy should be (socket format or just ip)  example 192.168.1.1:3128 or 1.1.1.1 
+                #can be an external proxy or local
                 proxy=results.loadproxy
                 os.popen("iptables -t nat -A PREROUTING -m multiport -p tcp --dports 80,443 -j DNAT --to "+proxy)
+                os.popen("iptables -t nat -I FORWARD -d "+proxy+" -j ACCEPT")
 ## Traffic generated from the machine its self won't be run on the proxy
  
                 
