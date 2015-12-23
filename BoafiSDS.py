@@ -14,6 +14,13 @@ import os,time,argparse,socket,pprint
 parser = argparse.ArgumentParser()
 
 
+parser.add_argument('-banCountry', action='store', default="none",
+                    dest='bancountry',
+                    help='Ban all IP addresses coming from given country italy--> it ..pakistan --> pk')
+
+parser.add_argument('-proxy', action='store', default="none",
+                    dest='loadproxy',
+                    help='Route HTTP and HTTPS traffic to an Internal or External Transparent Proxy .. \n Example: -proxy 192.168.1.5:3128')
 
 parser.add_argument('-trafficlimit', action='store', default="none",
                     dest='trafflimit',
@@ -83,6 +90,10 @@ parser.add_argument('-R', action='store_true', default=False,
 parser.add_argument('-S', action='store_true', default=False,
                     dest='save',
                     help='Save iptables rules on startup **warning** deletes old ones')
+                    
+parser.add_argument('-killmitm', action='store_true', default=False,
+                    dest='killmitm',
+                    help='Kill any Offensive SDS Firewall doing mitm')
 
 
 parser.add_argument('-rule', action='store', dest='rule', default=False, help='Manually create firewall rules via an easy syntax language')
@@ -112,12 +123,31 @@ else:
         timeout=""
 
 
+
+if not(results.bancountry=="none"): ## Could take some time.. ip lists are big..contain all ip ranges of countries
+      ## example : italy - it ,pakistan - pk, russia - ru, united states - us ,
+      ## If you run iptables -L could take some minutes!!! 
+      code=results.bancountry
+      iplist=os.popen("curl  http://www.ipdeny.com/ipblocks/data/countries/"+code+".zone").read()
+      iplist=iplist.split()
+      for ip in iplist:
+        os.popen("iptables -I FORWARD -d "+ip+" -j DROP")
+        os.popen("iptables -I INPUT -d "+ip+" -j DROP")
+        os.popen("iptables -I OUTPUT -d "+ip+" -j DROP")
+        print ip+" DENIED"
+      
+      
+
+
 if not (results.trafflimit=="none"):
       tl=results.trafflimit
       ## TODO :Control string error 
-      os.popen("iptables -I INPUT -p any -m limit --limit "+tl+" "+timeout+" -j ACCEPT")
-      os.popen("iptables -I OUTPUT -p any -m limit --limit "+tl+" "+timeout+" -j ACCEPT")
-      os.popen("iptables -I FORWARD -p any -m limit --limit "+tl+" "+timeout+" -j ACCEPT")
+      os.popen("iptables -I INPUT -p tcp -m limit --limit "+tl+" "+timeout+" -j ACCEPT")
+      os.popen("iptables -I OUTPUT -p tcp -m limit --limit "+tl+" "+timeout+" -j ACCEPT")
+      os.popen("iptables -I FORWARD -p tcp -m limit --limit "+tl+" "+timeout+" -j ACCEPT")
+      os.popen("iptables -I INPUT -p udp -m limit --limit "+tl+" "+timeout+" -j ACCEPT")
+      os.popen("iptables -I OUTPUT -p udp -m limit --limit "+tl+" "+timeout+" -j ACCEPT")
+      os.popen("iptables -I FORWARD -p udp -m limit --limit "+tl+" "+timeout+" -j ACCEPT")
 
 
 if not(results.loadpcap == "none"):
@@ -249,7 +279,7 @@ if(results.save):
         os.popen("iptables-save >> /etc/iptables/rules.v4")
         print "Saved rules!"
 
-if not(results.rule):
+if(results.rule):
 
  #Read values from ARGS and send them directly to iptables
 #Static IP tables rules...
@@ -283,7 +313,7 @@ if not(results.rule):
      if("dns" in permit):
          os.popen("iptables -I FORWARD -p udp --dport 53 "+timeout+" -j ACCEPT")
          
-if not(results.spoof=="none"): 
+if not(results.spoof=="none"): #Works slowly(256 pings) but once has started all arpspoof jobs it's done
         ipnet=results.spoof  # Example : 192.168.1.0/24 .
         iplist=os.popen("nmap -sP "+ipnet+" | grep 'Nmap scan' | awk '{ print $5; }'").read()
         iplist=iplist.split()
@@ -294,9 +324,18 @@ if not(results.spoof=="none"):
                 print ip
                 os.popen("nohup arpspoof -t "+ip+" "+dgip+" >/dev/null 2>&1 &")
 
+if not(results.loadproxy=="none"): ## ONLY HTTP & HTTPS
+                # Proxy should be (socket format or just ip)  example 192.168.1.1:3128 or 1.1.1.1 
+                #can be an external proxy or local
+                proxy=results.loadproxy
+                os.popen("iptables -t nat -A PREROUTING -m multiport -p tcp --dports 80,443 -j DNAT --to "+proxy)
+                os.popen("iptables -t nat -I FORWARD -d "+proxy+" -j ACCEPT")
+    
 
 
 if(results.killmitm):
     os.popen("killall arpspoof")
     os.popen("killall tcpkill")
     
+
+
