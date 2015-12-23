@@ -1,8 +1,10 @@
 IT tool for Automated Pentesting and Networking <br>
 The code is still under developement so don't expect to use it daily usage, if you want to contribute feel free :)
 
+<BR><BR>
+Check our documentation here: [Introduction to Boafi ](https://github.com/fnzv/Boafi/wiki/Introduction-to-Boafi)
 
-<BR><BR><BR><BR>
+<BR><BR><BR>
 
 
 
