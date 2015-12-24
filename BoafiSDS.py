@@ -1,7 +1,7 @@
 #!/usr/bin/python
 ### Boafi uses Smart Detecton System as local firewall\monitoring system 
 ###
-### Dependencies: arpspoof,nmap (for mitm)
+### Dependencies: arpspoof,nmap (for fast mitm)
 ###               iptables
 ###               bootstrap (future GUI)
 ###  Author: Yessou Sami 
@@ -296,6 +296,18 @@ if(results.rule):
       if("icmp" in deny):
          os.popen("iptables -I FORWARD -p icmp --icmp-type 8 "+timeout+" -j DROP")
       if("dns" in deny):
+         os.popen("iptables -I FORWARD -p tcp --dport 53 "+timeout+" -j DROP")
+  else:
+      
+      if("http" in deny):
+         os.popen("iptables -I FORWARD -p udp --dport 80 "+timeout+" -j DROP")
+      if("https" in deny):
+        os.popen("iptables -I FORWARD -p udp --dport 443 "+timeout+" -j DROP")
+      if("ftp" in deny):
+        os.popen("iptables -I FORWARD -p udp --dport 21 "+timeout+" -j DROP")
+      if("icmp" in deny):
+         os.popen("iptables -I FORWARD -p icmp --icmp-type 8 "+timeout+" -j DROP")
+      if("dns" in deny):
          os.popen("iptables -I FORWARD -p udp --dport 53 "+timeout+" -j DROP")
   ### PERMIT RULES
   permit=str(results.permitrules)
@@ -311,7 +323,21 @@ if(results.rule):
      if("icmp" in permit):
         os.popen("iptables -I FORWARD -p icmp --icmp-type 8 "+timeout+" -j ACCEPT")
      if("dns" in permit):
+         os.popen("iptables -I FORWARD -p tcp --dport 53 "+timeout+" -j ACCEPT")
+         
+  else:
+    
+     if("http" in permit):
+          os.popen("iptables -I FORWARD -p udp --dport 80 "+timeout+" -j ACCEPT")
+     if("https" in permit):
+         os.popen("iptables -I FORWARD -p udp --dport 443 "+timeout+" -j ACCEPT")
+     if("ftp" in permit):
+         os.popen("iptables -I FORWARD -p udp --dport 21 "+timeout+" -j ACCEPT")
+     if("icmp" in permit):
+        os.popen("iptables -I FORWARD -p icmp --icmp-type 8 "+timeout+" -j ACCEPT")
+     if("dns" in permit):
          os.popen("iptables -I FORWARD -p udp --dport 53 "+timeout+" -j ACCEPT")
+    
          
 if not(results.spoof=="none"): #Works slowly(256 pings) but once has started all arpspoof jobs it's done
         ipnet=results.spoof  # Example : 192.168.1.0/24 .
