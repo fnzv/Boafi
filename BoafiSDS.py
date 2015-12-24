@@ -283,7 +283,13 @@ if(results.rule):
 
  #Read values from ARGS and send them directly to iptables
 #Static IP tables rules...
+  permit=str(results.permitrules)
   deny=str(results.denyrules)
+  if("icmp" in permit):
+        os.popen("iptables -I FORWARD -p icmp --icmp-type 8 "+timeout+" -j ACCEPT")
+  elif("icmp" in deny):
+        os.popen("iptables -I FORWARD -p icmp --icmp-type 8 "+timeout+" -j DROP")
+        
   print "using rules ",deny
   if("tcp" in deny):
    
@@ -293,8 +299,6 @@ if(results.rule):
         os.popen("iptables -I FORWARD -p tcp --dport 443 "+timeout+" -j DROP")
       if("ftp" in deny):
         os.popen("iptables -I FORWARD -p tcp --dport 21 "+timeout+" -j DROP")
-      if("icmp" in deny):
-         os.popen("iptables -I FORWARD -p icmp --icmp-type 8 "+timeout+" -j DROP")
       if("dns" in deny):
          os.popen("iptables -I FORWARD -p tcp --dport 53 "+timeout+" -j DROP")
   else:
@@ -305,12 +309,9 @@ if(results.rule):
         os.popen("iptables -I FORWARD -p udp --dport 443 "+timeout+" -j DROP")
       if("ftp" in deny):
         os.popen("iptables -I FORWARD -p udp --dport 21 "+timeout+" -j DROP")
-      if("icmp" in deny):
-         os.popen("iptables -I FORWARD -p icmp --icmp-type 8 "+timeout+" -j DROP")
       if("dns" in deny):
          os.popen("iptables -I FORWARD -p udp --dport 53 "+timeout+" -j DROP")
   ### PERMIT RULES
-  permit=str(results.permitrules)
   print "using rules ",permit
   if("tcp" in permit):
   
