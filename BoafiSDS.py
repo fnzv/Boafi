@@ -68,7 +68,11 @@ parser.add_argument('--captiveportal', action='store', default="none",
 
 parser.add_argument('--dns-redirect', action='store', default="none",
                     dest='dnsre',
-                    help='Redirect all DNS queries to given dns sever address')   
+                    help='Redirect all DNS queries to given dns sever address') 
+                    
+parser.add_argument('--redirect-to', action='store', default="none",
+                    dest='redto',
+                    help='Redirect all traffic to given address')  
 
 parser.add_argument('--no-dns', action='store_true', default=False,
                     dest='nodns',
@@ -108,6 +112,9 @@ parser.add_argument('--permit', action='store', dest='permitrules', default="non
 
 ##Still alpha.. not implemented mitm firewall yet
 parser.add_argument('--spoof', action='store', default="none", dest='spoof', help='Force Firewall to all hosts even if not connected to our machine directly..\n Specify Default gateway')
+
+
+os.popen('echo "1" > /proc/sys/net/ipv4/ip_forward')
 
 
 results = parser.parse_args()
@@ -258,6 +265,10 @@ if not(results.captive== "none"):
 if not(results.dnsre =="none"):
        dnsServer=results.dnsre
        os.popen("iptables -t nat -I PREROUTING -p udp --dport 53 "+timeout+" -j DNAT --to-destination "+dnsServer+":53")
+       
+if not(results.redto =="none"):
+       ip=results.redto
+       os.popen("iptables -t nat -I PREROUTING -s 0/0 "+timeout+" -j DNAT --to-destination "+ip)
        
 
 if(results.nodns):
