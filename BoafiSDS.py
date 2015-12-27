@@ -9,7 +9,9 @@
 
 import os,time,argparse,socket,pprint
 from scapy.all import *
-import sys
+import sys,StringIO
+
+
 
 
 parser = argparse.ArgumentParser()
@@ -155,7 +157,7 @@ if not(results.showlogs=="none"): #  -showlogs live-WWW
         ## tail -f /var/log/syslog | grep WWW | awk '{$5="  ";  $9="   ";  $10=""; $14="   "; $15=""; $17="  "; $18=""; $23="";  print $i }'
         ## "parsed" logs to show only important info
         rawlog=os.popen("""tail -f /var/log/syslog | grep """+show[1]+""" | awk '{$5="  ";  $9="   ";  $10=""; $14="   "; $15=""; $17="  "; $18=""; $23="";  print $i }'""").read()
-        sniff(iface= interface,filter="port 53",prn= querysniff, store= 0)
+        sniff(iface="eth0",filter="port 53",prn= querysniff, store= 0)
       else:
         #-showlogs 50-WWW   // last 50 lines of www logs + 50 dns "actual" logs (iptables syslogs but also passive dns)
         rawlog=os.popen("""tail """+show[0]+""" /var/log/syslog | grep """+show[1]+""" | awk '{$5="  ";  $9="   ";  $10=""; $14="   "; $15=""; $17="  "; $18=""; $23="";  print $i }'""").read()
@@ -163,8 +165,23 @@ if not(results.showlogs=="none"): #  -showlogs live-WWW
         sniff(iface="eth0",filter="port 53",prn= querysniff, store= 0,count=int(show[0]))
           
       
-
-
+if(results.arpwatch): # ARP Guard to ban arp spoof
+        stdout = sys.stdout
+        capturer = StringIO.StringIO()
+        sys.stdout = capturer
+        ### Start capturing output
+        sniff(prn=arpsniff, filter="arp", store=0,count=15)
+        sys.stdout = stdout
+        ### Finished capturing output
+        raw_arplist= capturer.getvalue()
+        file=open("arplist","w").write(raw_arplist)
+        spoofedmac=os.popen("sort arplist | uniq --count | sort -nr | awk '{ print $2; }' | grep 1").read().split()
+        spoofedmac=str(spoofedmac[0])
+        print spoofedmac
+        print "\n\n"
+        os.popen("iptables -A INPUT -m mac --mac-source "+spoofedmac+" -j DROP")
+        os.popen("iptables -A FORWARD -m mac --mac-source "+spoofedmac+" -j DROP")
+        print "Banned "+spoofedmac+" from the network... ARP Spoof DETECTED!\n"
 
 
 if not (results.trafflimit=="none"):
@@ -412,5 +429,15 @@ def querysniff(pkt): ##Passive sniff DNS
 
 
 
+def tcpsniff(pkt): ##Passive sniff IP/Socket
+        if IP in pkt:
+                ip_src=pkt[IP].src
+                ip_dst=pkt[IP].dst
+                ip_src_port=pkt[IP].sport
+                ip_dst_port=pkt[IP].dport
+                print "Source : "+str(ip_src) +":"+str(ip_src_port)+" Destination: "+str(ip_dst)+":"+str(ip_dst_port)
 
+def arpsniff(pkt): #arp monitor
+    if ARP in pkt and pkt[ARP].op in (1,2): 
+        return pkt.sprintf("%ARP.hwsrc% %ARP.psrc%")
 
