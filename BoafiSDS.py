@@ -243,12 +243,12 @@ if not(results.whitelist =="none"):
 if not(results.nopolicy == "none"):
     chain=results.nopolicy
     os.popen("iptables -P "+chain+" DENY")
-    os.popen("iptables -I "+chain+" -p ALL -j LOG --log-prefix 'POLICY-SDS'")
+ 
 
 if not(results.yespolicy == "none"):
     chain=results.yespolicy
     os.popen("iptables -P "+chain+" ACCEPT")
-    os.popen("iptables -I "+chain+" -p ALL -j LOG --log-prefix 'POLICY-SDS'")
+
     
 
 if(results.log): #Full Logger.. then Grab data from syslog and save it into database( mysql)
@@ -265,7 +265,7 @@ if(results.log): #Full Logger.. then Grab data from syslog and save it into data
     #Log DNS
     os.popen("iptables -I FORWARD -p udp --dport 53 -j LOG --log-prefix 'DNS-SDS'")
     #Log credentials HTTP
-    os.popen("iptables -I FORWARD -p all -m string --string 'pass' --algo kmp -j LOG --log-prefix 'PASSWORD-SDS'")
+    os.popen("iptables -I FORWARD -p all -m string --string 'passw' --algo kmp -j LOG --log-prefix 'PASSWORD-SDS'")
     os.popen("iptables -I FORWARD -p all -m string --string 'user' --algo kmp  -j LOG --log-prefix 'USERNAME-SDS'")
     
 
