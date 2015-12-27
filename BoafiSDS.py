@@ -16,6 +16,10 @@ import sys,StringIO
 
 parser = argparse.ArgumentParser()
 
+parser.add_argument('-arpguard', action='store_true', default=False,
+                    dest='arpguard',
+                    help='Enable ARP Guard and automatically ban ARP Spoofing hosts')
+
 parser.add_argument('-showlogs', action='store', default="none",
                     dest='showlogs',
                     help='Show clean logs if present.. arguments: ALL,HTTP,DNS,TCP,UDP,IP')
@@ -165,7 +169,7 @@ if not(results.showlogs=="none"): #  -showlogs live-WWW
         sniff(iface="eth0",filter="port 53",prn= querysniff, store= 0,count=int(show[0]))
           
       
-if(results.arpwatch): # ARP Guard to ban arp spoof
+if(results.arpguard): # ARP Guard to ban arp spoof
         stdout = sys.stdout
         capturer = StringIO.StringIO()
         sys.stdout = capturer
