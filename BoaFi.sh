@@ -175,3 +175,4 @@ COMMIT
 -A POSTROUTING -o eth0 -j MASQUERADE
 COMMIT
 # Completed on Fri Oct 30 09:52:00 2015' > /etc/iptables/rules.v4
+echo "Done!"
