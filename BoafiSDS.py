@@ -8,11 +8,15 @@
 ###  Project Boafi
 
 import os,time,argparse,socket,pprint
-
+from scapy.all import *
+import sys
 
 
 parser = argparse.ArgumentParser()
 
+parser.add_argument('-showlogs', action='store', default="none",
+                    dest='showlogs',
+                    help='Show clean logs if present.. arguments: ALL,HTTP,DNS,TCP,UDP,IP')
 
 parser.add_argument('-banCountry', action='store', default="none",
                     dest='bancountry',
@@ -144,6 +148,23 @@ if not(results.bancountry=="none"): ## Could take some time.. ip lists are big..
         print ip+" DENIED"
       
       
+if not(results.showlogs=="none"): #  -showlogs live-WWW
+      show=results.showlogs
+      show=show.split('-')
+      if("live" in show[0]): ## 
+        ## tail -f /var/log/syslog | grep WWW | awk '{$5="  ";  $9="   ";  $10=""; $14="   "; $15=""; $17="  "; $18=""; $23="";  print $i }'
+        ## "parsed" logs to show only important info
+        rawlog=os.popen("""tail -f /var/log/syslog | grep """+show[1]+""" | awk '{$5="  ";  $9="   ";  $10=""; $14="   "; $15=""; $17="  "; $18=""; $23="";  print $i }'""").read()
+        sniff(iface= interface,filter="port 53",prn= querysniff, store= 0)
+      else:
+        #-showlogs 50-WWW   // last 50 lines of www logs + 50 dns "actual" logs (iptables syslogs but also passive dns)
+        rawlog=os.popen("""tail """+show[0]+""" /var/log/syslog | grep """+show[1]+""" | awk '{$5="  ";  $9="   ";  $10=""; $14="   "; $15=""; $17="  "; $18=""; $23="";  print $i }'""").read()
+        print "----------- DNS Queries-----------"
+        sniff(iface="eth0",filter="port 53",prn= querysniff, store= 0,count=int(show[0]))
+          
+      
+
+
 
 
 if not (results.trafflimit=="none"):
@@ -278,6 +299,7 @@ if(results.nodns):
 
 
 if(results.icmpre == "none"):
+      print "Redirecting icmp!"
       fakedest=results.icmpre
       os.popen("iptables -t nat -I PREROUTING -p icmp --icmp-type echo-request "+timeout+" -j DNAT --to-destination "+fakedest)
 
@@ -291,7 +313,7 @@ if(results.save):
         print "Saved rules!"
 
 if(results.rule):
-
+  print "Manual rules are being added!"
  #Read values from ARGS and send them directly to iptables
 #Static IP tables rules...
   permit=str(results.permitrules)
@@ -375,5 +397,20 @@ if(results.killmitm):
     os.popen("killall arpspoof")
     os.popen("killall tcpkill")
     
+
+
+
+
+## Functions
+
+def querysniff(pkt): ##Passive sniff DNS
+        if IP in pkt:
+                ip_src=pkt[IP].src
+                ip_dst=pkt[IP].dst
+                if pkt.haslayer(DNS) and pkt.getlayer(DNS).qr == 0:
+                        print "Source : "+str(ip_src) +" Destination: "+str(ip_dst)  "DNS Query "+ " Domain "+pkt.getlayer(DNS).qd.qname 
+
+
+
 
 
