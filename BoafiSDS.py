@@ -11,7 +11,32 @@ import os,time,argparse,socket,pprint
 from scapy.all import *
 import sys,StringIO
 
+## Functions
+########################
+########################
+def querysniff(pkt): ##Passive sniff DNS
+        if IP in pkt:
+                ip_src=pkt[IP].src
+                ip_dst=pkt[IP].dst
+                if pkt.haslayer(DNS) and pkt.getlayer(DNS).qr == 0:
+                        print "Source : "+str(ip_src) +" Destination: "+str(ip_dst)  "DNS Query "+ " Domain "+pkt.getlayer(DNS).qd.qname 
 
+
+
+def ipsniff(pkt): ##Passive sniff IP/Socket
+        if IP in pkt:
+                ip_src=pkt[IP].src
+                ip_dst=pkt[IP].dst
+                ip_src_port=pkt[IP].sport
+                ip_dst_port=pkt[IP].dport
+                print "Source : "+str(ip_src) +":"+str(ip_src_port)+" Destination: "+str(ip_dst)+":"+str(ip_dst_port)
+
+def arpsniff(pkt): #arp monitor
+    if ARP in pkt and pkt[ARP].op in (1,2): 
+        return pkt.sprintf("%ARP.hwsrc% %ARP.psrc%")
+
+########################
+########################
 
 
 parser = argparse.ArgumentParser()
@@ -422,26 +447,4 @@ if(results.killmitm):
 
 
 
-## Functions
-
-def querysniff(pkt): ##Passive sniff DNS
-        if IP in pkt:
-                ip_src=pkt[IP].src
-                ip_dst=pkt[IP].dst
-                if pkt.haslayer(DNS) and pkt.getlayer(DNS).qr == 0:
-                        print "Source : "+str(ip_src) +" Destination: "+str(ip_dst)  "DNS Query "+ " Domain "+pkt.getlayer(DNS).qd.qname 
-
-
-
-def tcpsniff(pkt): ##Passive sniff IP/Socket
-        if IP in pkt:
-                ip_src=pkt[IP].src
-                ip_dst=pkt[IP].dst
-                ip_src_port=pkt[IP].sport
-                ip_dst_port=pkt[IP].dport
-                print "Source : "+str(ip_src) +":"+str(ip_src_port)+" Destination: "+str(ip_dst)+":"+str(ip_dst_port)
-
-def arpsniff(pkt): #arp monitor
-    if ARP in pkt and pkt[ARP].op in (1,2): 
-        return pkt.sprintf("%ARP.hwsrc% %ARP.psrc%")
 
