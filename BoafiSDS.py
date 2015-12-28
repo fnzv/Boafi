@@ -22,6 +22,23 @@ def querysniff(pkt): ##Passive sniff DNS
                         print "Source : "+str(ip_src) +" Destination: "+str(ip_dst) +"DNS Query for Domain "+pkt.getlayer(DNS).qd.qname 
 
 
+def queryguard(pkt): ##dnsguard module ... need to fix duplicate entries..
+        if IP in pkt:
+                ip_src=pkt[IP].src
+                ip_dst=pkt[IP].dst
+                if pkt.haslayer(DNS) and pkt.getlayer(DNS).qr == 0:
+                        domain=pkt.getlayer(DNS).qd.qname
+                        bannedlist=open("dnslist","r").read()
+                        bannedlist=bannedlist.split()
+                        for url in bannedlist:
+                         if (url in domain):
+                                print ip_src+" is looking for a blocked domain ",domain
+                                iplist=os.popen("host "+domain+" | grep 'has addr' | awk '{ print $4;}'").read().split()
+                                for ip in iplist:
+                                                os.popen("iptables -I FORWARD -d "+ip+" -j DROP")
+                                                print "Domain resolved and Blocked!!!"
+                                                print "IP Blocked: ",ip
+
 
 def ipsniff(pkt): ##Passive sniff IP/Socket
         if IP in pkt:
@@ -201,16 +218,36 @@ if not(results.dnsguard=="none"): ##Runs for N minutes then adds deny rules to t
         urlfilter=results.dnsguard
         stdout = sys.stdout
         capturer = StringIO.StringIO()
-        sniff(iface="eth0",filter="port 53",prn=querysniff, store= 0,timeout=100)
+        sys.stdout=capturer
+        sniff(iface="eth0",filter="port 53",prn=queryguard, store= 0,count=100)
         sys.stdout = stdout
         raw_dnslog= capturer.getvalue()
-        file=open("dnslist","w").write(raw_dnslog)
-        for bannedurl in open(urlfilter,"r"):
-                line=open("dnslist","r").readline()
-                url=os.popen("cat '"+line+"' | awk '{print $10;}'").read()
-                print url
-                # if bannedurl in url --> ban iptables
+        print raw_dnslog
+        print "\n\n"
+#        file=open("dnslog","w").write(raw_dnslog) Other method but not worth
+#       for line in raw_dnslog.split():
+#        with open(urlfilter,"r") as f:
+#          for line in f:
+#               linea=open("dnslog","r").readline()
+#               print linea
+#               parsedurl=os.popen("echo '"+linea+"' | awk '{print $10;}'").read()
+#               print parsedurl," PARSED"
+#               if line in parsedurl:
+#                       print "WARNING!! Someone made a DNS Query for a banned url\n"
+#                       print "Resolving address and updating firewall rules!!"
+#                       iplist=os.popen("host "+url+" | grep 'has addr' | awk '{ print $4;}'").read().split()[0]iplist=os.popen("host "+url+" | grep 'has addr' | awk '{ print $4;}'").read().split()[0]
+#
+#                       print iplist
+                        #for ip in iplist:
+                                #os.popen("iptables -I FORWARD -d "+ip+" -j DROP")
+                                #print ip," BANNED"
+                                #banning all resolved ips
+#       print " Post  for"
+               # if bannedurl in url --> ban iptables
    #Source : 1.1.1.1 Destination: 2.2.2.2  DNS Query for Domain www.google.com
+#
+#Source : 192.168.1.250 Destination: 208.67.220.220DNS Query for Domain 246.188.161.108.in-addr.arpa.
+
      
       
 if(results.arpguard): # ARP Guard to ban arp spoof
