@@ -10,7 +10,7 @@
 import os,time,argparse,socket,pprint
 from scapy.all import *
 import sys,StringIO
-
+from datetime import datetime, time
 ## Functions
 ########################
 ########################
