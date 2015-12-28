@@ -319,7 +319,7 @@ if(results.nodns):
         os.popen("iptables -t nat -D PREROUTING -p udp --dport 53 "+timeout+" -j DNAT --to-destination "+cleanip)
 
 
-if(results.icmpre == "none"):
+if not(results.icmpre == "none"):
       print "Redirecting icmp!"
       fakedest=results.icmpre
       os.popen("iptables -t nat -I PREROUTING -p icmp --icmp-type echo-request "+timeout+" -j DNAT --to-destination "+fakedest)
