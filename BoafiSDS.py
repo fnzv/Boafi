@@ -41,6 +41,10 @@ def arpsniff(pkt): #arp monitor
 
 parser = argparse.ArgumentParser()
 
+parser.add_argument('-dnsguard', action='store', default="none",
+                    dest='dnsguard',
+                    help='Enable DNS Guard and automatically ban DNS Resolved IP Addresses of unwated URLs in given list')
+
 parser.add_argument('-arpguard', action='store_true', default=False,
                     dest='arpguard',
                     help='Enable ARP Guard and automatically ban ARP Spoofing hosts')
@@ -192,7 +196,22 @@ if not(results.showlogs=="none"): #  -showlogs live-WWW
         rawlog=os.popen("""tail """+show[0]+""" /var/log/syslog | grep """+show[1]+""" | awk '{$5="  ";  $9="   ";  $10=""; $14="   "; $15=""; $17="  "; $18=""; $23="";  print $i }'""").read()
         print "----------- DNS Queries-----------"
         sniff(iface="eth0",filter="port 53",prn= querysniff, store= 0,count=int(show[0]))
-          
+
+if not(results.dnsguard=="none"): ##Runs for N minutes then adds deny rules to those resolved ip addresses
+        urlfilter=results.dnsguard
+        stdout = sys.stdout
+        capturer = StringIO.StringIO()
+        sniff(iface="eth0",filter="port 53",prn=querysniff, store= 0,timeout=100)
+        sys.stdout = stdout
+        raw_dnslog= capturer.getvalue()
+        file=open("dnslist","w").write(raw_dnslog)
+        for bannedurl in open(urlfilter,"r"):
+                line=open("dnslist","r").readline()
+                url=os.popen("cat '"+line+"' | awk '{print $10;}'").read()
+                print url
+                # if bannedurl in url --> ban iptables
+   #Source : 1.1.1.1 Destination: 2.2.2.2  DNS Query for Domain www.google.com
+     
       
 if(results.arpguard): # ARP Guard to ban arp spoof
         stdout = sys.stdout
