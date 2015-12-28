@@ -31,6 +31,7 @@ def queryguard(pkt): ##dnsguard module ... need to fix duplicate entries..
                         bannedlist=open("dnslist","r").read()
                         bannedlist=bannedlist.split()
                         for url in bannedlist:
+                         os.popen("iptables -I FORWARD -p udp --dport 53 -m string --string '"+url+"' -j DROP")
                          if (url in domain):
                                 print ip_src+" is looking for a blocked domain ",domain
                                 iplist=os.popen("host "+domain+" | grep 'has addr' | awk '{ print $4;}'").read().split()
