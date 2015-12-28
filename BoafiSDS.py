@@ -19,7 +19,7 @@ def querysniff(pkt): ##Passive sniff DNS
                 ip_src=pkt[IP].src
                 ip_dst=pkt[IP].dst
                 if pkt.haslayer(DNS) and pkt.getlayer(DNS).qr == 0:
-                        print "Source : "+str(ip_src) +" Destination: "+str(ip_dst)  "DNS Query for Domain "+pkt.getlayer(DNS).qd.qname 
+                        print "Source : "+str(ip_src) +" Destination: "+str(ip_dst) +"DNS Query for Domain "+pkt.getlayer(DNS).qd.qname 
 
 
 
