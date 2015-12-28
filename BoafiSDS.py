@@ -197,20 +197,31 @@ if not(results.showlogs=="none"): #  -showlogs live-WWW
 if(results.arpguard): # ARP Guard to ban arp spoof
         stdout = sys.stdout
         capturer = StringIO.StringIO()
+        beginscan= datetime.now()
         sys.stdout = capturer
         ### Start capturing output
-        sniff(prn=arpsniff, filter="arp", store=0,count=15)
+        sniff(prn=arpsniff, filter="arp", store=0,count=10)
         sys.stdout = stdout
         ### Finished capturing output
         raw_arplist= capturer.getvalue()
+        finishscan = datetime.now()
+        print "Started at: ",beginscan
+        print "Finished at: ",finishscan
         file=open("arplist","w").write(raw_arplist)
+        times=os.popen("sort arplist | uniq --count | sort -nr").read().split()[0]
+        seconds=str((finishscan - beginscan).seconds)
+        print "Found MAC Flooded for "+times+" times in "+seconds+" seconds"
         spoofedmac=os.popen("sort arplist | uniq --count | sort -nr | awk '{ print $2; }' | grep 1").read().split()
         spoofedmac=str(spoofedmac[0])
-        print spoofedmac
-        print "\n\n"
-        os.popen("iptables -A INPUT -m mac --mac-source "+spoofedmac+" -j DROP")
-        os.popen("iptables -A FORWARD -m mac --mac-source "+spoofedmac+" -j DROP")
-        print "Banned "+spoofedmac+" from the network... ARP Spoof DETECTED!\n"
+        if not(seconds>10 or times<5):
+                print "Attacker is: ",spoofedmac
+                os.popen("iptables -A INPUT -m mac --mac-source "+spoofedmac+" -j DROP")
+                os.popen("iptables -A FORWARD -m mac --mac-source "+spoofedmac+" -j DROP")
+                print "Banned "+spoofedmac+" from the network... ARP Spoof DETECTED!\n"
+                os.popen("rm arplist")
+        else:
+                print "None is doing MAC Flooding"
+                print "Most duplicate MAC is: ",spoofedmac
 
 
 if not (results.trafflimit=="none"):
