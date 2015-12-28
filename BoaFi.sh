@@ -5,15 +5,16 @@ apt-get update
 echo "Installing packages..."
 apt-get install -y aircrack-ng apache2 php5 bind9 isc-dhcp-server hostapd
 echo "Done.
-Configuring hostapd..."
+Configuring hostapd... Please insert the WiFi Network name: "
+read network
 echo "interface=wlan0
 driver=nl80211
-ssid=Wi(Boa)Fi
+ssid=$network
 channel=6
 macaddr_acl=0
 auth_algs=1
 ignore_broadcast_ssid=0
-#wpa=2
+#wpa=2 //commented: open network
 #wpa_passphrase=1337
 #wpa_key_mgmt=WPA-PSK
 #wpa_pairwise=TKIP
