@@ -27,7 +27,7 @@ parser.add_argument('-loadcfg', action='store_true', dest='loadcfg',
 parser.add_argument('-loadrules', action='store_true', dest='loadrules',
                     help='Load iptables rules')
     
-parser.add_argument('-proxy', action='store', dest='proxy',default="none",
+parser.add_argument('-proxy', action='store', dest='loadproxy',default="none",
                     help='Load transparent proxy rules to given address')
 
 parser.add_argument('-stop', action='store_true', dest='stop',
@@ -103,6 +103,7 @@ if(results.loadcfg):
 if(results.loadrules):
          ## Run iptables rules in ram and don't store them
                 # except traffic 22,53
+                print "Added Transparent TOR Proxy Rules!"
                 os.popen("sudo iptables -t nat -A PREROUTING -i wlan0 -p tcp --dport 22 -j REDIRECT --to-ports 22") 
                 #Rule to allow us to ssh in rpi 
                 os.popen("sudo iptables -t nat -A PREROUTING -i wlan0 -p udp --dport 53 -j REDIRECT --to-ports 53") 
@@ -129,7 +130,7 @@ if not(results.loadproxy=="none"): ## ONLY HTTP & HTTPS
                 os.popen("iptables -t nat -A PREROUTING -m multiport -p tcp --dports 80,443 -j DNAT --to "+proxy)
                 os.popen("iptables -t nat -I FORWARD -d "+proxy+" -j ACCEPT")
 ## Traffic generated from the machine its self won't be run on the proxy
- 
+                print "Added Proxy rules!"
                 
                 
                 
