@@ -33,12 +33,14 @@ parser.add_argument('-proxy', action='store', dest='loadproxy',default="none",
 parser.add_argument('-stop', action='store_true', dest='stop',
                     help='Stop TOR and restore Iptables')
 
-
 parser.add_argument('-run', action='store_true', dest='run',
                     help='Run\Restart Tor service')
 
 parser.add_argument('-ip', action='store', dest='ip',
                     help='Specify the ip address of the Boafi interface that will serve as Tor Gateway ')
+
+parser.add_argument('--web', action='store_true', dest='web',
+                    help='Only web traffic will be redirected into transparent proxy ')
 
 
 
@@ -54,7 +56,7 @@ loadcfg=results.loadcfg
 if (results.ip):
         ip=str(results.ip)
 else:
-        ip="192.168.42.1"
+        ip=os.popen(""" ifconfig wlan0 | grep 'inet addr' | awk '{ print $2;}' | sed 's/addr://' """).read()
 
 
 
@@ -103,12 +105,14 @@ if(results.loadcfg):
 if(results.loadrules):
          ## Run iptables rules in ram and don't store them
                 # except traffic 22,53
-                print "Added Transparent TOR Proxy Rules!"
-                os.popen("sudo iptables -t nat -A PREROUTING -i wlan0 -p tcp --dport 22 -j REDIRECT --to-ports 22") 
-                #Rule to allow us to ssh in rpi 
-                os.popen("sudo iptables -t nat -A PREROUTING -i wlan0 -p udp --dport 53 -j REDIRECT --to-ports 53") 
+                os.popen("sudo iptables -t nat -A PREROUTING -i wlan0 -p tcp --dport 22 -j REDIRECT --to-ports 22")
+                #Rule to allow us to ssh in rpi
+                os.popen("sudo iptables -t nat -A PREROUTING -i wlan0 -p udp --dport 53 -j REDIRECT --to-ports 53")
                 #Rule to allow dns requests
-                os.popen("sudo iptables -t nat -A PREROUTING -i wlan0 -p tcp --syn -j REDIRECT --to-ports 9040") 
+                if(results.web):
+                        os.popen("sudo iptables -t nat -A PREROUTING -i wlan0 -m multiport -p tcp --dports 80,443 -j REDIRECT --to-ports 9040")
+                else:
+                        os.popen("sudo iptables -t nat -A PREROUTING -i wlan0 -p tcp --syn -j REDIRECT --to-ports 9040")
 
 if(results.run):
                 print "Starting TOR service"
@@ -123,22 +127,34 @@ if(results.stop):
                 os.popen("sudo iptables-restore < /etc/iptables.ipv4.nat")
                 print "Restored Default iptables rules from /etc/iptables.ipv4.nat"
                 
-if not(results.loadproxy=="none"): ## ONLY HTTP & HTTPS
-                # Proxy should be (socket format or just ip)  example 192.168.1.1:3128 or 1.1.1.1 
+if not(results.loadproxy=="none"):: ## ONLY HTTP & HTTPS
+                # Proxy should be (socket format or just ip)  example 192.168.1.1:3128 or 1.1.1.1
                 #can be an external proxy or local
                 proxy=results.loadproxy
-                os.popen("iptables -t nat -A PREROUTING -m multiport -p tcp --dports 80,443 -j DNAT --to "+proxy)
-                os.popen("iptables -t nat -I FORWARD -d "+proxy+" -j ACCEPT")
-## Traffic generated from the machine its self won't be run on the proxy
+                if(results.web):
+                        os.popen("iptables -t nat -A PREROUTING -m multiport -p tcp --dports 80,443 -j DNAT --to "+proxy)
+                else:
+                        os.popen("iptables -t nat -A PREROUTING -s 0/0 -j DNAT --to "+proxy)
+
+                os.popen("iptables -I FORWARD -d "+proxy+" -j ACCEPT")
+                os.popen("iptables -I INPUT -s "+proxy+" -j ACCEPT")
+                os.popen("iptables -I OUTPUT -d "+proxy+" -j ACCEPT")
                 print "Added Proxy rules!"
                 
                 
                 
 ##### TODO:
-####  Add iptables rules to force all traffic except ssh and dns for management
-###   Add torrc configuration file checker
-##    Add install module to install tor via simple command and configure it with the script.. 
-#     Add external support for Bridge/Exit Relay... and other rules 
-#     Add Alternative VPN\proxy if tor fails
+###   Add torrc configuration file checker -check
+#     Add external support for Bridge/Exit Relay... and other rules -ports 80,433
+#######ReachableAddresses accept *:80  in torrc conf
+########ReachableAddresses accept *:443
+## Proxy
+#HTTPSProxy 192.168.1.44:443      If it requires a username and password
+#HTTPSProxyAuthenticator username:password
+
+
+
+
+
 # example : ./boafiGate.py -install -ip 192.168.42.1 -loadall lan
   
