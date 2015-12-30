@@ -6,6 +6,10 @@ import os,time,argparse
 parser = argparse.ArgumentParser()
 
 
+parser.add_argument('-connect', action='store', dest='connect', default="none",
+                    help='Connect to given open wifi network with given wlan interface... FreeWifi-wlan0')
+
+
 parser.add_argument('-wifi', action='store_true', dest='wifi', default=False,
                     help='Get near-by wifi list')
 
@@ -60,7 +64,17 @@ noautohoney=results.noautohoney
 nopentest=results.nopentest
 fmonitor=results.fmonitor
 sysinfo=results.sysinfo
+connect=results.connect
 
+if not(connect=="none"):
+        interface=connect.split("-")[1]
+        net=connect.split("-")[0]
+        if("-" not in connect):
+          print os.popen("sudo iw dev wlan0 connect "+network).read()
+          os.popen("dhcpcd wlan0")
+        else:  
+          print os.popen("sudo iw dev "+inteface+" connect "+network).read()
+          os.popen("dhcpcd "+interface)
 
 
 if(wifi):
