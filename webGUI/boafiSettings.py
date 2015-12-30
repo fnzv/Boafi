@@ -6,7 +6,7 @@ import os,time,argparse
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('-connectwpa', action='store', dest='connect', default="none",
+parser.add_argument('-connectwpa', action='store', dest='connectwpa', default="none",
                     help='Connect to given WPA wifi network with wlan interface... Network:password-wlan0.. if not specified interface will take wlan0')
 
 parser.add_argument('-connect', action='store', dest='connect', default="none",
@@ -48,15 +48,12 @@ connect=results.connect
 connectwpa=results.connectwpa
 
 
-if not(connectwpa=="none"):# -connectwpa WifiNet:password-wlan0
+if not(connectwpa=="none"):# -connectwpa WifiNet:password
         net=connectwpa.split(":")[0]
         password=connectwpa.split(":")[1]
         interface=connectwpa.split("-")[1]
         os.popen("sudo wpa_passphrase "+net+" "+password+" > "+net)
-        if("-" not in connectwpa):
-          os.popen("sudo wpa_supplicant -D nl80211 -i wlan0 -c "+net) ## DHCP should be automatically assigned via wpa_supplicant
-        else:
-          os.popen("sudo wpa_supplicant -i "+interface+" -c "+net)
+        os.popen("sudo nohup wpa_supplicant -i wlan0 -c "+net+" >/dev/null 2>&1 &") ## DHCP should be automatically assigned via wpa_supplicant
           # -D n180211 ALFA driver.. but works even without using specific drivers
 
 if not(connect=="none"):
