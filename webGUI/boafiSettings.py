@@ -6,6 +6,11 @@ import os,time,argparse
 
 parser = argparse.ArgumentParser()
 
+parser.add_argument('-connectwpa', action='store', dest='connect', default="none",
+                    help='Connect to given WPA wifi network with wlan interface... Network:password-wlan0.. if not specified interface will take wlan0')
+
+parser.add_argument('-connect', action='store', dest='connect', default="none",
+                    help='Connect to given open wifi network with given wlan interface... FreeWifi-wlan0')
 
 parser.add_argument('-intf', action='store', dest='intf',default="none",
                     help='Select interface')
@@ -39,7 +44,30 @@ down=results.down
 up=results.up
 restart=results.restart
 ifstat=results.ifstat
+connect=results.connect
+connectwpa=results.connectwpa
 
+
+if not(connectwpa=="none"):# -connectwpa WifiNet:password-wlan0
+        net=connectwpa.split(":")[0]
+        password=connectwpa.split(":")[1]
+        interface=connectwpa.split("-")[1]
+        os.popen("sudo wpa_passphrase "+net+" "+password+" > "+net)
+        if("-" not in connectwpa):
+          os.popen("sudo wpa_supplicant -D nl80211 -i wlan0 -c "+net) ## DHCP should be automatically assigned via wpa_supplicant
+        else:
+          os.popen("sudo wpa_supplicant -i "+interface+" -c "+net)
+          # -D n180211 ALFA driver.. but works even without using specific drivers
+
+if not(connect=="none"):
+        interface=connect.split("-")[1]
+        net=connect.split("-")[0]
+        if("-" not in connect):
+          print os.popen("sudo iw dev wlan0 connect "+network).read()
+          os.popen("dhcpcd wlan0")
+        else:  
+          print os.popen("sudo iw dev "+inteface+" connect "+network).read()
+          os.popen("dhcpcd "+interface)
 
 if not(intf=="none"):
         if(ip!="none"):
