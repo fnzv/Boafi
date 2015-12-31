@@ -49,6 +49,7 @@ connectwpa=results.connectwpa
 
 
 if not(connectwpa=="none"):# -connectwpa WifiNet:password
+
         net=connectwpa.split(":")[0]
         password=connectwpa.split(":")[1]
         interface=connectwpa.split("-")[1]
@@ -57,8 +58,12 @@ if not(connectwpa=="none"):# -connectwpa WifiNet:password
           # -D n180211 ALFA driver.. but works even without using specific drivers
 
 if not(connect=="none"):
-        interface=connect.split("-")[1]
-        net=connect.split("-")[0]
+        try:
+           interface=connect.split("-")[1]
+           network=connect.split("-")[0]
+        except:
+            network=connect
+            interface="wlan0"
         if("-" not in connect):
           print os.popen("sudo iw dev wlan0 connect "+network).read()
           os.popen("dhcpcd wlan0")
