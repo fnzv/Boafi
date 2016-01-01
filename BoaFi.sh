@@ -1,12 +1,19 @@
+#Installation :  chmod +x BoaFi.sh
+#                sudo ./BoaFi.sh  
+
+
 echo "BoaFi configuration script v0.1"
 sudo su
 echo "Checking..."
 apt-get update
 echo "Installing packages..."
-apt-get install -y aircrack-ng apache2 php5 bind9 isc-dhcp-server hostapd
+# One liner easy install of major packages
+apt-get install -y aircrack-ng apache2 php5 php5-mysql mysql-server bind9 iptables nmap dsniff isc-dhcp-server hostapd tor python-pip
 echo "Done.
-Configuring hostapd... Please insert the WiFi Network name: "
+Configuring hostapd... Please insert the WiFi Network name: \n\n"
 read network
+echo "Please insert the WiFi Network password: \n\n"
+read -s password
 echo "interface=wlan0
 driver=nl80211
 ssid=$network
@@ -14,16 +21,16 @@ channel=6
 macaddr_acl=0
 auth_algs=1
 ignore_broadcast_ssid=0
-#wpa=2 //commented: open network
-#wpa_passphrase=1337
-#wpa_key_mgmt=WPA-PSK
-#wpa_pairwise=TKIP
-#rsn_pairwise=CCMP" > /etc/hostapd/hostapd.conf
+wpa=2 //commented: open network
+wpa_passphrase=$password
+wpa_key_mgmt=WPA-PSK
+wpa_pairwise=TKIP
+rsn_pairwise=CCMP" > /etc/hostapd/hostapd.conf
 echo "Done.
 Configuring bind9..."
-echo 'zone "." {
-type master;
-file "/etc/bind/db.catchall";
+echo '//zone "." {
+//type master;
+//file "/etc/bind/db.catchall";
 };' >> /etc/bind/named.conf.local
 echo "$TTL    604800
 @       IN      SOA     . root.localhost. (
@@ -144,7 +151,6 @@ log-facility local7;
 #    range 10.0.29.10 10.0.29.230;
 #  }
 #}
-
 subnet 192.168.42.0 netmask 255.255.255.0{
  range 192.168.42.10 192.168.42.255;
  option broadcast-address 192.168.42.255;
@@ -171,9 +177,36 @@ COMMIT
 :INPUT ACCEPT [21:1273]
 :OUTPUT ACCEPT [0:0]
 :POSTROUTING ACCEPT [0:0]
--A PREROUTING -p tcp -m tcp --dport 443 -j DNAT --to-destination 192.168.42.1
--A PREROUTING -p tcp -m tcp --dport 80 -j DNAT --to-destination 192.168.42.1
 -A POSTROUTING -o eth0 -j MASQUERADE
 COMMIT
 # Completed on Fri Oct 30 09:52:00 2015' > /etc/iptables/rules.v4
 echo "Done!"
+# Adding scripts and other dependencies 
+#Scapy lastest version
+echo "Installing Scapy..\n"
+cd /tmp
+wget http://www.secdev.org/projects/scapy/files/scapy-?????.zip
+unzip scapy*.zip
+cd scapy*
+sudo python setup.py install
+echo "Finished Scapy install..\n"
+echo "Installing Paramiko..\n"
+pip install paramiko
+echo "Finished Paramiko install..\n"
+
+echo "Downloading scripts from Github..\n"
+mkdir Boafi && cd Boafi
+wget https://github.com/fnzv/Boafi/archive/master.zip
+unzip master.zip
+cd Boafi-master
+echo "Copying scripts in /home/Boafi ..\n"
+cp *.py /home/Boafi
+cp /Configurations/tor/torrc /etc/tor/torrc
+## Copy bootstrap files into /var/www/admin
+## For boafi webGUI management
+
+echo "Boafi is ready!!"
+
+
+
+
