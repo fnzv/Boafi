@@ -206,7 +206,7 @@ if not(results.showlogs=="none"): #  shows live packet logging
       if("dns" in res): ##
         ## tail -f /var/log/syslog | grep WWW | awk '{$5="  ";  $9="   ";  $10=""; $14="   "; $15=""; $17="  "; $18=""; $23="";  print $i }'
         ## "parsed" logs to show only important info
-        print os.popen(""""tail -n 100 /var/log/syslog | grep DNS | awk '{$5="  ";  $9="   ";  $10=""; $14="   "; $15=""; $17="  "; $18=""; $23="";  print $i }'""").read()
+        print os.popen("""tail -n 100 /var/log/syslog | grep DNS | awk '{$5="  ";  $9="   ";  $10=""; $14="   "; $15=""; $17="  "; $18=""; $23="";  print $i }'""").read()
 
       if("www" in res):
         print os.popen("""tail -n 100 /var/log/syslog | grep WWW | awk '{$5="  ";  $9="   ";  $10=""; $14="   "; $15=""; $17="  "; $18=""; $23="";  print $i }'""").read()
