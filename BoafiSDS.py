@@ -208,12 +208,11 @@ if not(results.showlogs=="none"): #  -showlogs live-WWW
         ## tail -f /var/log/syslog | grep WWW | awk '{$5="  ";  $9="   ";  $10=""; $14="   "; $15=""; $17="  "; $18=""; $23="";  print $i }'
         ## "parsed" logs to show only important info
         rawlog=os.popen("""tail -f /var/log/syslog | grep """+show[1]+""" | awk '{$5="  ";  $9="   ";  $10=""; $14="   "; $15=""; $17="  "; $18=""; $23="";  print $i }'""").read()
-        sniff(iface="eth0",filter="port 53",prn= querysniff, store= 0)
+        #sniff(iface="eth0",filter="port 53",prn= querysniff, store= 0) thats for live logging
       else:
         #-showlogs 50-WWW   // last 50 lines of www logs + 50 dns "actual" logs (iptables syslogs but also passive dns)
-        rawlog=os.popen("""tail """+show[0]+""" /var/log/syslog | grep """+show[1]+""" | awk '{$5="  ";  $9="   ";  $10=""; $14="   "; $15=""; $17="  "; $18=""; $23="";  print $i }'""").read()
-        print "----------- DNS Queries-----------"
-        sniff(iface="eth0",filter="port 53",prn= querysniff, store= 0,count=int(show[0]))
+        rawlog=os.popen("""tail -n """+show[0]+""" /var/log/syslog | grep """+show[1]+""" | awk '{$5="  ";  $9="   ";  $10=""; $14="   "; $15=""; $17="  "; $18=""; $23="";  print $i }'""").read()
+       # sniff(iface="eth0",filter="port 53",prn= querysniff, store= 0,count=int(show[0]))
 
 if not(results.dnsguard=="none"): ##Runs for N minutes then adds deny rules to those resolved ip addresses
         urlfilter=results.dnsguard
