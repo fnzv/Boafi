@@ -40,7 +40,7 @@ parser.add_argument('-NoPentest', action='store_true', dest='nopentest', default
                     help='Turns Off any Pentesting attack currently running')
 
 parser.add_argument('-FastMonitoring', action='store_true', dest='fmonitor', default=False,
-                    help='Perform a quick scan on the network and shows online hosts,current connections,dns queri$
+                    help='Perform a quick scan on the network and shows online hosts,current connections,dns queries')
 
 parser.add_argument('-SysInfo', action='store_true', dest='sysinfo', default=False,
                     help='Show Boafi Status (process,system data..)')
@@ -128,7 +128,7 @@ if(nopentest):
 
 if(sysinfo):
         info=os.popen("ifconfig").read()+"\n---------\n"+os.popen("ps -A").read()+"\n---------\nHW:\n"+os.popen("lscpu && lsusb && df -H && free -m").read()
-        open("data"+time.time(),"w").write(info)
+        open("data"+str(time.time()),"w").write(info)
 
 
 
