@@ -142,8 +142,8 @@ if(results.blackhole):
 if(results.off):
         #removes iptables redirection
         # Need to optimize the rule removal
-        os.popen("iptables -t nat -D  PREROUTING 1") # Removes first 2 rules inserted with -I on PREROUTING
-        os.popen("iptables -t nat -D  PREROUTING 2")
+        os.popen("iptables -t nat -D  PREROUTING -p tcp --dport 80 -j DNAT --to-destination "+ipaddr+":80") # Removes first 2 rules inserted with -I on PREROUTING
+        os.popen("iptables -t nat -D  PREROUTING -p tcp --dport 443 -j DNAT --to-destination "+ipaddr+":80")
         file=open("/etc/bind/named.conf.local","r").read()
         open("/etc/bind/named.conf.local","w").write(file.replace(named," "))
         #replaces the dns black hole
