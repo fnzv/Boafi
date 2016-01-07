@@ -81,6 +81,8 @@ if(updatecap):
       print recent
       os.popen("cp "+recent+" /var/www/BDashboard/PhpScripts/CsvFile.csv")
       print "Updated .csv file to last captured!"
+      os.popen("php /var/www/BDashboard/PhpScripts/CsvReader.php")
+      os.popen("php /var/www/BDashboard/PhpScripts/DBViewer.php")
       
 
 if not(intf=="none"):
